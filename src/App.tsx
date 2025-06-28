@@ -10,6 +10,7 @@ import Analytics from './pages/Analytics';
 import AudienceInsights from './pages/AudienceInsights';
 import Profile from './pages/Profile';
 import Login from './pages/Login';
+import Notifications from './pages/Notifications';
 // import Home from './pages/Home'; // Commented out as it's not currently used
 import SignUp from './pages/SignUp';
 import Settings from './pages/Settings';
@@ -65,6 +66,16 @@ const AppRoutes: React.FC = () => {
         {userLoggedIn ? (
           <DashboardLayout>
             <AudienceInsights />
+          </DashboardLayout>
+        ) : (
+          <Redirect to="/login" />
+        )}
+      </Route>
+      
+      <Route path="/notifications">
+        {userLoggedIn ? (
+          <DashboardLayout>
+            <Notifications />
           </DashboardLayout>
         ) : (
           <Redirect to="/login" />

@@ -23,6 +23,7 @@ import {
   Home as HomeIcon,
   Login as LoginIcon,
   Logout as LogoutIcon,
+  Notifications as NotificationsIcon,
 } from '@mui/icons-material';
 import { useHistory } from 'react-router-dom';
 import { useAuth } from '../contexts/authContext';
@@ -73,6 +74,7 @@ const navigationItems = [
   { text: 'Content Library', icon: <ContentLibraryIcon />, id: 'content-library', path: '/content-library' },
   { text: 'Analytics', icon: <AnalyticsIcon />, id: 'analytics', path: '/analytics' },
   { text: 'Audience Insights', icon: <AudienceIcon />, id: 'audience-insights', path: '/audience-insights' },
+  { text: 'Notifications', icon: <NotificationsIcon />, id: 'notifications', path: '/notifications' },
 ];
 
 // User related items
