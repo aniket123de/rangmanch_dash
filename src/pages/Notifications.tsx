@@ -35,90 +35,38 @@ import {
   AccessTime as TimeIcon,
   TrendingUp as IndustryIcon,
 } from '@mui/icons-material';
-
-interface NotificationData {
-  id: string;
-  brandName: string;
-  industry: string;
-  website: string;
-  location: string;
-  socials: {
-    instagram?: string;
-    twitter?: string;
-    linkedin?: string;
-    facebook?: string;
-  };
-  timestamp: string;
-  status: 'new' | 'viewed' | 'accepted' | 'rejected';
-  brandLogo?: string;
-  message: string;
-}
-
-// Demo data
-const demoNotifications: NotificationData[] = [
-  {
-    id: '1',
-    brandName: 'StyleCraft Fashion',
-    industry: 'Fashion & Lifestyle',
-    website: 'https://stylecraft.com',
-    location: 'Mumbai, Maharashtra',
-    socials: {
-      instagram: '@stylecraft_official',
-      twitter: '@stylecraft',
-      linkedin: 'stylecraft-fashion',
-      facebook: 'StyleCraftFashion',
-    },
-    timestamp: '2 hours ago',
-    status: 'new',
-    brandLogo: 'https://via.placeholder.com/60x60/FF6B6B/ffffff?text=SC',
-    message: 'StyleCraft Fashion wants to collaborate with you for their upcoming summer collection campaign.',
-  },
-  {
-    id: '2',
-    brandName: 'TechGear Pro',
-    industry: 'Technology & Electronics',
-    website: 'https://techgearpro.com',
-    location: 'Bangalore, Karnataka',
-    socials: {
-      instagram: '@techgearpro',
-      twitter: '@techgear_pro',
-      linkedin: 'techgear-pro',
-    },
-    timestamp: '1 day ago',
-    status: 'viewed',
-    brandLogo: 'https://via.placeholder.com/60x60/4ECDC4/ffffff?text=TG',
-    message: 'TechGear Pro is interested in featuring your tech reviews for their new product launch.',
-  },
-  {
-    id: '3',
-    brandName: 'GreenLife Organics',
-    industry: 'Health & Wellness',
-    website: 'https://greenlifeorganics.com',
-    location: 'Pune, Maharashtra',
-    socials: {
-      instagram: '@greenlife_organics',
-      twitter: '@greenlifeorg',
-      linkedin: 'greenlife-organics',
-      facebook: 'GreenLifeOrganics',
-    },
-    timestamp: '3 days ago',
-    status: 'accepted',
-    brandLogo: 'https://via.placeholder.com/60x60/95E1D3/ffffff?text=GL',
-    message: 'GreenLife Organics has selected you for their wellness ambassador program.',
-  },
-];
+import { useNotifications } from '../contexts/NotificationsContext';
 
 const Notifications: React.FC = () => {
   const theme = useTheme();
-  const [notifications, setNotifications] = useState<NotificationData[]>(demoNotifications);
+  const { notifications, unreadCount, setNotifications, addNotification } = useNotifications();
   const [filter, setFilter] = useState<'all' | 'new' | 'viewed' | 'accepted' | 'rejected'>('all');
 
   const handleStatusChange = (id: string, newStatus: 'accepted' | 'rejected' | 'viewed') => {
-    setNotifications(prev => 
-      prev.map(notification => 
-        notification.id === id ? { ...notification, status: newStatus } : notification
-      )
+    const updatedNotifications = notifications.map(notification => 
+      notification.id === id ? { ...notification, status: newStatus } : notification
     );
+    setNotifications(updatedNotifications);
+  };
+
+  // Function to simulate adding a new notification (for testing)
+  const addDemoNotification = () => {
+    const demoNotification = {
+      id: `demo-${Date.now()}`,
+      brandName: 'Demo Brand',
+      industry: 'Demo Industry',
+      website: 'https://demo.com',
+      location: 'Demo Location',
+      socials: {
+        instagram: '@demo_brand',
+        twitter: '@demobrand',
+      },
+      timestamp: 'Just now',
+      status: 'new' as const,
+      brandLogo: 'https://via.placeholder.com/60x60/9B59B6/ffffff?text=DB',
+      message: 'This is a demo notification to test the blinking red dot feature.',
+    };
+    addNotification(demoNotification);
   };
 
   const getStatusColor = (status: string) => {
@@ -155,18 +103,28 @@ const Notifications: React.FC = () => {
     filter === 'all' || notification.status === filter
   );
 
-  const newNotificationsCount = notifications.filter(n => n.status === 'new').length;
+  const newNotificationsCount = unreadCount;
 
   return (
     <Box>
       {/* Header */}
-      <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-        <Badge badgeContent={newNotificationsCount} color="error">
-          <NotificationsIcon sx={{ fontSize: 32, mr: 2, color: theme.palette.primary.main }} />
-        </Badge>
-        <Typography variant="h4" component="h1" sx={{ fontWeight: 700 }}>
-          Notifications
-        </Typography>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <Badge badgeContent={newNotificationsCount} color="error">
+            <NotificationsIcon sx={{ fontSize: 32, mr: 2, color: theme.palette.primary.main }} />
+          </Badge>
+          <Typography variant="h4" component="h1" sx={{ fontWeight: 700 }}>
+            Notifications
+          </Typography>
+        </Box>
+        <Button
+          variant="outlined"
+          color="primary"
+          onClick={addDemoNotification}
+          sx={{ ml: 2 }}
+        >
+          + Add Demo Notification
+        </Button>
       </Box>
 
       {/* Filter Chips */}

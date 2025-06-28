@@ -27,6 +27,7 @@ import {
 } from '@mui/icons-material';
 import { useHistory } from 'react-router-dom';
 import { useAuth } from '../contexts/authContext';
+import { useNotifications } from '../contexts/NotificationsContext';
 
 interface SidebarProps {
   open: boolean;
@@ -67,6 +68,25 @@ const UserProfileSection = styled(Box)(({ theme }) => ({
   borderTop: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'}`,
 }));
 
+const BlinkingDot = styled(Box)(({ theme }) => ({
+  position: 'absolute',
+  top: 8,
+  right: 8,
+  width: 8,
+  height: 8,
+  backgroundColor: theme.palette.error.main,
+  borderRadius: '50%',
+  animation: 'blink 1s ease-in-out infinite alternate',
+  '@keyframes blink': {
+    '0%': {
+      opacity: 0.3,
+    },
+    '100%': {
+      opacity: 1,
+    },
+  },
+}));
+
 // Main navigation items
 const navigationItems = [
   { text: 'Home', icon: <HomeIcon />, id: 'home', path: 'https://rangmanch.vercel.app' },
@@ -92,6 +112,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   const theme = useTheme();
   const history = useHistory();
   const { user, userLoggedIn, logout, userData } = useAuth();
+  const { unreadCount } = useNotifications();
 
   const handleNavItemClick = (item: { text: string; id: string; path: string }) => {
     onSectionChange(item.id);
@@ -122,6 +143,8 @@ const Sidebar: React.FC<SidebarProps> = ({
   const renderNavItem = (item: { text: string; icon: React.ReactNode; id: string; path: string }) => {
     const active = currentSection === item.id;
     const isExternal = item.path.startsWith('http');
+    const isNotifications = item.id === 'notifications';
+    const hasUnreadNotifications = isNotifications && unreadCount > 0;
 
     return (
       <ListItem 
@@ -154,9 +177,11 @@ const Sidebar: React.FC<SidebarProps> = ({
             sx={{
               minWidth: 40,
               color: active ? theme.palette.primary.main : theme.palette.text.secondary,
+              position: 'relative',
             }}
           >
             {item.icon}
+            {hasUnreadNotifications && <BlinkingDot />}
           </ListItemIcon>
           <ListItemText 
             primary={item.text}

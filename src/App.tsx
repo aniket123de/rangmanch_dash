@@ -18,6 +18,7 @@ import SocialDataScraper from './components/SocialDataScraper';
 import Loader from './components/Loader';
 import { ThemeProvider as CustomThemeProvider } from './context/ThemeContext';
 import { AuthProvider, useAuth } from './contexts/authContext';
+import { NotificationsProvider } from './contexts/NotificationsContext';
 
 const AppRoutes: React.FC = () => {
   const { userLoggedIn, loading } = useAuth();
@@ -146,15 +147,17 @@ const App: React.FC = () => {
 
   return (
     <AuthProvider>
-      <CustomThemeProvider>
-        <ThemeProvider theme={theme}>
-          <CssBaseline />
-          {loading && <Loader />}
-          <Router>
-            <AppRoutes />
-          </Router>
-        </ThemeProvider>
-      </CustomThemeProvider>
+      <NotificationsProvider>
+        <CustomThemeProvider>
+          <ThemeProvider theme={theme}>
+            <CssBaseline />
+            {loading && <Loader />}
+            <Router>
+              <AppRoutes />
+            </Router>
+          </ThemeProvider>
+        </CustomThemeProvider>
+      </NotificationsProvider>
     </AuthProvider>
   );
 };
