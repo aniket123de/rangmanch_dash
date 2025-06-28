@@ -92,7 +92,7 @@ const Login: React.FC = () => {
                   <div className="form-inp">
                     <input
                       placeholder="Role"
-                      type="text"
+                      type="hidden"
                       value="creator"
                       disabled
                       style={{ 
