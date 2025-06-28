@@ -24,6 +24,7 @@ import {
   Instagram as InstagramIcon,
   LinkedIn as LinkedInIcon,
   YouTube as YouTubeIcon,
+  AttachMoney as MoneyIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/authContext';
 import { createOrUpdateCreatorProfile, getMyCreatorProfile } from '../firebase/firestore';
@@ -45,6 +46,7 @@ const Profile: React.FC = () => {
     location: '',
     avatarUrl: '',
     niche: '',
+    tariff: '',
     categories: [] as string[],
     socialLinks: {
       twitter: '',
@@ -72,6 +74,7 @@ const Profile: React.FC = () => {
             location: (creatorProfile as any)?.location || '',
             avatarUrl: (creatorProfile as any)?.avatarUrl || user.photoURL || '',
             niche: (creatorProfile as any)?.niche || '',
+            tariff: (creatorProfile as any)?.tariff || '',
             categories: (creatorProfile as any)?.categories || [],
             socialLinks: {
               twitter: (creatorProfile as any)?.socials?.twitter || '',
@@ -112,6 +115,7 @@ const Profile: React.FC = () => {
           location: profileData.location,
           avatarUrl: profileData.avatarUrl,
           niche: profileData.niche,
+          tariff: profileData.tariff,
           categories: profileData.categories,
           socials: profileData.socialLinks,
         };
@@ -328,6 +332,27 @@ const Profile: React.FC = () => {
                     disabled={!editing}
                     variant="outlined"
                     placeholder="e.g., Lifestyle, Fashion, Tech"
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Tariff (₹)"
+                    name="tariff"
+                    type="number"
+                    value={profileData.tariff}
+                    onChange={handleProfileDataChange}
+                    disabled={!editing}
+                    variant="outlined"
+                    placeholder="e.g., 5000"
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <MoneyIcon color="action" />
+                        </InputAdornment>
+                      ),
+                    }}
+                    helperText="Amount charged per project/collaboration"
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
