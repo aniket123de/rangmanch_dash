@@ -25,7 +25,8 @@ import {
   ToggleButtonGroup,
   ToggleButton,
   Tooltip,
-  Alert
+  Alert,
+  useMediaQuery
 } from '@mui/material';
 import {
   YouTube,
@@ -707,6 +708,7 @@ const InstagramInsights: React.FC<InstagramInsightsProps> = (props) => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [viewMode, setViewMode] = useState<string>('table');
   const [typeFilter, setTypeFilter] = useState<string>('all');
+  const isMobile = useMediaQuery('(max-width:600px)');
 
   const handleSelectChange = useCallback((event: SelectChangeEvent) => {
     onSelect(event.target.value);
@@ -1263,6 +1265,7 @@ interface YouTubeChartProps {
 
 const YouTubeChart: React.FC<YouTubeChartProps> = ({ youtubeDetails }) => {
   const [chartType, setChartType] = useState<string>('views');
+  const isMobile = useMediaQuery('(max-width:600px)');
   
   // Process YouTube data for top 10 videos
   const processData = useCallback(() => {
@@ -1340,7 +1343,9 @@ const YouTubeChart: React.FC<YouTubeChartProps> = ({ youtubeDetails }) => {
     const categories = top10.map(video => {
       const title = video.title || video.snippet?.title || 'Untitled';
       // Truncate title for better display
-      return title.length > 20 ? title.substring(0, 17) + '...' : title;
+      return isMobile
+        ? (title.length > 12 ? title.substring(0, 10) + '...' : title)
+        : (title.length > 20 ? title.substring(0, 17) + '...' : title);
     });
     
     const seriesData = top10.map(video => {
@@ -1362,7 +1367,7 @@ const YouTubeChart: React.FC<YouTubeChartProps> = ({ youtubeDetails }) => {
     }
     
     return { categories, seriesData };
-  }, [youtubeDetails, chartType]);
+  }, [youtubeDetails, chartType, isMobile]);
   
   const { categories, seriesData } = processData();
   
@@ -1374,7 +1379,7 @@ const YouTubeChart: React.FC<YouTubeChartProps> = ({ youtubeDetails }) => {
   const options = {
     chart: {
       type: 'bar',
-      height: 350,
+      height: isMobile ? 200 : 350,
       toolbar: {
         show: false
       },
@@ -1384,7 +1389,7 @@ const YouTubeChart: React.FC<YouTubeChartProps> = ({ youtubeDetails }) => {
     plotOptions: {
       bar: {
         horizontal: true,
-        barHeight: '70%',
+        barHeight: isMobile ? '40%' : '70%',
         distributed: true,
         borderRadius: 5
       }
@@ -1401,14 +1406,15 @@ const YouTubeChart: React.FC<YouTubeChartProps> = ({ youtubeDetails }) => {
       },
       style: {
         colors: ['#ffffff'],
-        fontSize: '12px'
+        fontSize: isMobile ? '9px' : '12px'
       }
     },
     xaxis: {
       categories: categories,
       labels: {
         style: {
-          colors: Array(10).fill('#ffffff')
+          colors: Array(10).fill('#ffffff'),
+          fontSize: isMobile ? '9px' : '12px',
         },
         formatter: function(val: string) {
           // Format x-axis labels for large numbers
@@ -1422,13 +1428,17 @@ const YouTubeChart: React.FC<YouTubeChartProps> = ({ youtubeDetails }) => {
             return num.toString();
           }
           return val;
-        }
+        },
+        rotate: isMobile ? -30 : 0,
+        minHeight: isMobile ? 10 : undefined,
+        maxHeight: isMobile ? 30 : undefined,
       }
     },
     yaxis: {
       labels: {
         style: {
-          colors: ['#ffffff']
+          colors: ['#ffffff'],
+          fontSize: isMobile ? '9px' : '12px',
         }
       }
     },
@@ -1439,7 +1449,8 @@ const YouTubeChart: React.FC<YouTubeChartProps> = ({ youtubeDetails }) => {
       text: chartType === 'views' ? 'Top 10 Videos by Views' : 'Top 10 Videos by Likes',
       align: 'center',
       style: {
-        color: '#ffffff'
+        color: '#ffffff',
+        fontSize: isMobile ? '13px' : '18px',
       }
     },
     tooltip: {
@@ -1455,15 +1466,12 @@ const YouTubeChart: React.FC<YouTubeChartProps> = ({ youtubeDetails }) => {
   return (
     <Box sx={{ 
       bgcolor: '#1a1a2e', 
-      p: 2, 
+      p: isMobile ? 1.5 : 2, 
       borderRadius: 2, 
-      mt: 3,
-      '@media (max-width: 600px)': {
-        mt: 2,
-        p: 1
-      }
+      mt: isMobile ? 2 : 3,
+      mb: isMobile ? 2.5 : 4,
     }}>
-      <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'center', mb: isMobile ? 2.5 : 3 }}>
         <ToggleButtonGroup
           value={chartType}
           exclusive
@@ -1478,18 +1486,57 @@ const YouTubeChart: React.FC<YouTubeChartProps> = ({ youtubeDetails }) => {
           </ToggleButton>
         </ToggleButtonGroup>
       </Box>
-      <ReactApexChart 
-        options={{
-          ...options,
-          chart: {
-            ...options.chart,
-            height: window.innerWidth <= 600 ? 250 : 350
-          }
-        }}
-        series={series}
-        type="bar"
-        height={window.innerWidth <= 600 ? 250 : 350}
-      />
+      {isMobile ? (
+        <Box sx={{
+          width: '100%',
+          overflowX: 'auto',
+          display: 'flex',
+          pb: 1.5,
+          pl: 0.5,
+        }}>
+          <Box sx={{ minWidth: 500, flex: '0 0 auto' }}>
+            <ReactApexChart 
+              options={{
+                ...options,
+                chart: {
+                  ...options.chart,
+                  offsetX: 60,
+                },
+                plotOptions: {
+                  ...options.plotOptions,
+                  bar: {
+                    ...options.plotOptions?.bar,
+                    barHeight: '70%',
+                  },
+                },
+                yaxis: {
+                  ...options.yaxis,
+                  labels: {
+                    ...options.yaxis.labels,
+                    style: {
+                      ...options.yaxis.labels.style,
+                      fontSize: '11px',
+                      lineHeight: 2.5,
+                    },
+                    minWidth: 80,
+                    maxWidth: 120,
+                  },
+                },
+              }}
+              series={series}
+              type="bar"
+              height={300}
+            />
+          </Box>
+        </Box>
+      ) : (
+        <ReactApexChart 
+          options={options}
+          series={series}
+          type="bar"
+          height={350}
+        />
+      )}
     </Box>
   );
 };
@@ -1501,6 +1548,7 @@ interface InstagramChartProps {
 
 const InstagramChart: React.FC<InstagramChartProps> = ({ instagramDetails }) => {
   const [chartType, setChartType] = useState<string>('engagement');
+  const isMobile = useMediaQuery('(max-width:600px)');
   
   // Process data for pie chart showing post types
   const processTypeData = useCallback(() => {
@@ -1563,13 +1611,15 @@ const InstagramChart: React.FC<InstagramChartProps> = ({ instagramDetails }) => 
     // Prepare series data
     const categories = top10.map(post => {
       // Truncate caption for better display
-      return post.caption.length > 20 ? post.caption.substring(0, 17) + '...' : post.caption;
+      return isMobile
+        ? (post.caption.length > 12 ? post.caption.substring(0, 10) + '...' : post.caption)
+        : (post.caption.length > 20 ? post.caption.substring(0, 17) + '...' : post.caption);
     });
     
     const seriesData = top10.map(post => post.totalEngagement);
     
     return { categories, seriesData };
-  }, [instagramDetails]);
+  }, [instagramDetails, isMobile]);
   
   const typeData = processTypeData();
   const { categories, seriesData } = processEngagementData();
@@ -1606,7 +1656,7 @@ const InstagramChart: React.FC<InstagramChartProps> = ({ instagramDetails }) => 
   const engagementOptions = {
     chart: {
       type: 'bar',
-      height: 350,
+      height: isMobile ? 200 : 350,
       toolbar: {
         show: false
       },
@@ -1616,7 +1666,7 @@ const InstagramChart: React.FC<InstagramChartProps> = ({ instagramDetails }) => 
     plotOptions: {
       bar: {
         horizontal: true,
-        barHeight: '70%',
+        barHeight: isMobile ? '40%' : '70%',
         distributed: true,
         borderRadius: 5
       }
@@ -1628,14 +1678,19 @@ const InstagramChart: React.FC<InstagramChartProps> = ({ instagramDetails }) => 
       categories: categories,
       labels: {
         style: {
-          colors: Array(10).fill('#ffffff')
-        }
+          colors: Array(10).fill('#ffffff'),
+          fontSize: isMobile ? '9px' : '12px',
+        },
+        rotate: isMobile ? -30 : 0,
+        minHeight: isMobile ? 10 : undefined,
+        maxHeight: isMobile ? 30 : undefined,
       }
     },
     yaxis: {
       labels: {
         style: {
-          colors: ['#ffffff']
+          colors: ['#ffffff'],
+          fontSize: isMobile ? '9px' : '12px',
         }
       }
     },
@@ -1646,7 +1701,8 @@ const InstagramChart: React.FC<InstagramChartProps> = ({ instagramDetails }) => 
       text: 'Top 10 Posts by Engagement',
       align: 'center',
       style: {
-        color: '#ffffff'
+        color: '#ffffff',
+        fontSize: isMobile ? '13px' : '18px',
       }
     },
     tooltip: {
@@ -1667,15 +1723,12 @@ const InstagramChart: React.FC<InstagramChartProps> = ({ instagramDetails }) => 
   return (
     <Box sx={{ 
       bgcolor: '#1a1a2e', 
-      p: 2, 
+      p: isMobile ? 1.5 : 2, 
       borderRadius: 2, 
-      mt: 3,
-      '@media (max-width: 600px)': {
-        mt: 2,
-        p: 1
-      }
+      mt: isMobile ? 2 : 3,
+      mb: isMobile ? 2.5 : 4,
     }}>
-      <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'center', mb: isMobile ? 2.5 : 3 }}>
         <ToggleButtonGroup
           value={chartType}
           exclusive
@@ -1691,31 +1744,105 @@ const InstagramChart: React.FC<InstagramChartProps> = ({ instagramDetails }) => 
         </ToggleButtonGroup>
       </Box>
       {chartType === 'types' ? (
-        <ReactApexChart 
-          options={{
-            ...typeOptions,
-            chart: {
-              ...typeOptions.chart,
-              height: window.innerWidth <= 600 ? 250 : 350
-            }
-          }}
-          series={typeSeries}
-          type="pie"
-          height={window.innerWidth <= 600 ? 250 : 350}
-        />
+        isMobile ? (
+          <Box sx={{
+            width: '100%',
+            overflowX: 'auto',
+            display: 'flex',
+            pb: 1.5,
+            pl: 0.5,
+          }}>
+            <Box sx={{ minWidth: 500, flex: '0 0 auto' }}>
+              <ReactApexChart 
+                options={{
+                  ...typeOptions,
+                  chart: {
+                    ...typeOptions.chart,
+                    height: 200
+                  },
+                  legend: {
+                    ...typeOptions.legend,
+                    fontSize: '10px',
+                  },
+                  labels: typeOptions.labels,
+                }}
+                series={typeSeries}
+                type="pie"
+                height={200}
+              />
+            </Box>
+          </Box>
+        ) : (
+          <ReactApexChart 
+            options={{
+              ...typeOptions,
+              chart: {
+                ...typeOptions.chart,
+                height: 350
+              },
+              legend: {
+                ...typeOptions.legend,
+                fontSize: '14px',
+              },
+              labels: typeOptions.labels,
+            }}
+            series={typeSeries}
+            type="pie"
+            height={350}
+          />
+        )
       ) : (
-        <ReactApexChart 
-          options={{
-            ...engagementOptions,
-            chart: {
-              ...engagementOptions.chart,
-              height: window.innerWidth <= 600 ? 250 : 350
-            }
-          }}
-          series={engagementSeries}
-          type="bar"
-          height={window.innerWidth <= 600 ? 250 : 350}
-        />
+        isMobile ? (
+          <Box sx={{
+            width: '100%',
+            overflowX: 'auto',
+            display: 'flex',
+            pb: 1.5,
+            pl: 0.5,
+          }}>
+            <Box sx={{ minWidth: 500, flex: '0 0 auto' }}>
+              <ReactApexChart 
+                options={{
+                  ...engagementOptions,
+                  chart: {
+                    ...engagementOptions.chart,
+                    offsetX: 60,
+                  },
+                  plotOptions: {
+                    ...engagementOptions.plotOptions,
+                    bar: {
+                      ...engagementOptions.plotOptions?.bar,
+                      barHeight: '70%',
+                    },
+                  },
+                  yaxis: {
+                    ...engagementOptions.yaxis,
+                    labels: {
+                      ...engagementOptions.yaxis.labels,
+                      style: {
+                        ...engagementOptions.yaxis.labels.style,
+                        fontSize: '11px',
+                        lineHeight: 2.5,
+                      },
+                      minWidth: 80,
+                      maxWidth: 120,
+                    },
+                  },
+                }}
+                series={engagementSeries}
+                type="bar"
+                height={300}
+              />
+            </Box>
+          </Box>
+        ) : (
+          <ReactApexChart 
+            options={engagementOptions}
+            series={engagementSeries}
+            type="bar"
+            height={350}
+          />
+        )
       )}
     </Box>
   );
