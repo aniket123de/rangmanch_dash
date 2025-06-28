@@ -76,9 +76,9 @@ const navigationItems = [
 ];
 
 // User related items
-const userItems = [
-  { text: 'Profile', icon: <ProfileIcon />, id: 'profile', path: '/profile' },
-];
+// const userItems = [
+//   { text: 'Profile', icon: <ProfileIcon />, id: 'profile', path: '/profile' },
+// ];
 
 const Sidebar: React.FC<SidebarProps> = ({
   open,
@@ -185,6 +185,26 @@ const Sidebar: React.FC<SidebarProps> = ({
     );
   };
 
+  // Avatar for Profile button
+  const profileAvatar = (
+    <Avatar
+      sx={{ width: 32, height: 32, bgcolor: theme.palette.primary.main }}
+      src={
+        (userLoggedIn && (user?.photoURL || userData?.profileImage))
+          ? (user?.photoURL || userData?.profileImage)
+          : undefined
+      }
+    >
+      {userLoggedIn && !(user?.photoURL || userData?.profileImage)
+        ? (user?.displayName?.charAt(0) || user?.email?.charAt(0) || 'U')
+        : null}
+    </Avatar>
+  );
+
+  const userItems = [
+    { text: 'Profile', icon: profileAvatar, id: 'profile', path: '/profile' },
+  ];
+
   const drawerContent = (
     <Box sx={{ 
       height: '100%',
@@ -220,70 +240,98 @@ const Sidebar: React.FC<SidebarProps> = ({
         my: 1,
       }} />
 
-      <Box sx={{ p: 2 }}>
-        <List sx={{ p: 0 }}>
-          {userItems.map(renderNavItem)}
-        </List>
-      </Box>
-
-      <UserProfileSection>
-        <Avatar
-          sx={{ 
-            width: 40, 
-            height: 40,
-            bgcolor: theme.palette.primary.main,
-            boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
-          }}
-          src={
-            (userLoggedIn && (user?.photoURL || userData?.profileImage))
-              ? (user?.photoURL || userData?.profileImage)
-              : undefined
-          }
-        >
-          {userLoggedIn && !(user?.photoURL || userData?.profileImage)
-            ? (user?.displayName?.charAt(0) || user?.email?.charAt(0) || 'U')
-            : null}
-        </Avatar>
-        <Box sx={{ ml: 'auto' }}>
+      <Box sx={{ p: 2, pb: 3, width: '100%' }}>
+        {/* Profile and Logout buttons grouped together */}
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, width: '100%' }}>
+          {userItems.map(item => (
+            <Button
+              key={item.id}
+              fullWidth
+              size="large"
+              variant={currentSection === item.id ? 'contained' : 'outlined'}
+              onClick={() => handleNavItemClick(item)}
+              startIcon={
+                <Avatar
+                  sx={{ width: 36, height: 36, bgcolor: theme.palette.primary.main }}
+                  src={
+                    (userLoggedIn && (user?.photoURL || userData?.profileImage))
+                      ? (user?.photoURL || userData?.profileImage)
+                      : undefined
+                  }
+                >
+                  {userLoggedIn && !(user?.photoURL || userData?.profileImage)
+                    ? (user?.displayName?.charAt(0) || user?.email?.charAt(0) || 'U')
+                    : null}
+                </Avatar>
+              }
+              sx={{
+                borderColor: currentSection === item.id ? theme.palette.primary.main : theme.palette.divider,
+                color: currentSection === item.id ? 'white' : theme.palette.text.primary,
+                background: currentSection === item.id ? theme.palette.primary.main : 'transparent',
+                fontWeight: 600,
+                justifyContent: 'flex-start',
+                textTransform: 'none',
+                py: 1.5,
+                fontSize: '1rem',
+                '&:hover': {
+                  borderColor: currentSection === item.id ? theme.palette.primary.main : theme.palette.divider,
+                  backgroundColor: theme.palette.mode === 'dark' ? '#23263a' : '#f5f5f5',
+                  color: currentSection === item.id ? 'white' : theme.palette.text.primary,
+                },
+              }}
+            >
+              {item.text}
+            </Button>
+          ))}
           {userLoggedIn ? (
             <Button
-              size="small"
+              fullWidth
+              size="large"
               variant="outlined"
               startIcon={<LogoutIcon />}
               onClick={handleLogout}
               sx={{
                 borderColor: theme.palette.error.main,
                 color: theme.palette.error.main,
+                fontWeight: 600,
+                justifyContent: 'center',
                 '&:hover': {
                   borderColor: theme.palette.error.dark,
                   backgroundColor: theme.palette.error.main,
                   color: 'white',
                 },
+                py: 1.5,
+                fontSize: '1rem',
               }}
             >
               Logout
             </Button>
           ) : (
             <Button
-              size="small"
+              fullWidth
+              size="large"
               variant="outlined"
               startIcon={<LoginIcon />}
               onClick={handleLoginClick}
               sx={{
                 borderColor: theme.palette.primary.main,
                 color: theme.palette.primary.main,
+                fontWeight: 600,
+                justifyContent: 'center',
                 '&:hover': {
                   borderColor: theme.palette.primary.dark,
                   backgroundColor: theme.palette.primary.main,
                   color: 'white',
                 },
+                py: 1.5,
+                fontSize: '1rem',
               }}
             >
               Login
             </Button>
           )}
         </Box>
-      </UserProfileSection>
+      </Box>
     </Box>
   );
 
