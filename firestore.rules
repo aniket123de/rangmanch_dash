@@ -49,5 +49,10 @@ service cloud.firestore {
         (resource.data.brandId == request.auth.uid || 
          resource.data.creatorId == request.auth.uid);
     }
+    
+    // Notifications collection
+    match /notifications/{docId} {
+      allow read, write: if request.auth != null;
+    }
   }
 } 

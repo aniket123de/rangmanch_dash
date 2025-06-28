@@ -1,7 +1,11 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { auth } from '../firebase/firebase';
+import { fetchNotifications, markNotificationAsRead, updateNotificationStatus } from '../firebase/notifications';
 
 interface NotificationData {
   id: string;
+  receiverId: string;
+  senderId: string;
   brandName: string;
   industry: string;
   website: string;
@@ -12,18 +16,22 @@ interface NotificationData {
     linkedin?: string;
     facebook?: string;
   };
-  timestamp: string;
-  status: 'new' | 'viewed' | 'accepted' | 'rejected';
-  brandLogo?: string;
   message: string;
+  brandLogo?: string;
+  status: 'new' | 'viewed' | 'accepted' | 'rejected';
+  createdAt: Date;
+  updatedAt: Date;
+  readAt?: Date;
+  formattedTimestamp?: string;
 }
 
 interface NotificationsContextType {
   notifications: NotificationData[];
   unreadCount: number;
-  setNotifications: (notifications: NotificationData[]) => void;
-  markAsRead: (id: string) => void;
-  addNotification: (notification: NotificationData) => void;
+  loading: boolean;
+  markAsRead: (id: string) => Promise<void>;
+  updateStatus: (id: string, status: 'accepted' | 'rejected') => Promise<void>;
+  refreshNotifications: () => void;
 }
 
 const NotificationsContext = createContext<NotificationsContextType | undefined>(undefined);
@@ -32,79 +40,97 @@ interface NotificationsProviderProps {
   children: ReactNode;
 }
 
-// Demo data
-const demoNotifications: NotificationData[] = [
-  {
-    id: '1',
-    brandName: 'StyleCraft Fashion',
-    industry: 'Fashion & Lifestyle',
-    website: 'https://stylecraft.com',
-    location: 'Mumbai, Maharashtra',
-    socials: {
-      instagram: '@stylecraft_official',
-      twitter: '@stylecraft',
-      linkedin: 'stylecraft-fashion',
-      facebook: 'StyleCraftFashion',
-    },
-    timestamp: '2 hours ago',
-    status: 'new',
-    brandLogo: 'https://via.placeholder.com/60x60/FF6B6B/ffffff?text=SC',
-    message: 'StyleCraft Fashion wants to collaborate with you for their upcoming summer collection campaign.',
-  },
-  {
-    id: '2',
-    brandName: 'TechGear Pro',
-    industry: 'Technology & Electronics',
-    website: 'https://techgearpro.com',
-    location: 'Bangalore, Karnataka',
-    socials: {
-      instagram: '@techgearpro',
-      twitter: '@techgear_pro',
-      linkedin: 'techgear-pro',
-    },
-    timestamp: '1 day ago',
-    status: 'viewed',
-    brandLogo: 'https://via.placeholder.com/60x60/4ECDC4/ffffff?text=TG',
-    message: 'TechGear Pro is interested in featuring your tech reviews for their new product launch.',
-  },
-  {
-    id: '3',
-    brandName: 'GreenLife Organics',
-    industry: 'Health & Wellness',
-    website: 'https://greenlifeorganics.com',
-    location: 'Pune, Maharashtra',
-    socials: {
-      instagram: '@greenlife_organics',
-      twitter: '@greenlifeorg',
-      linkedin: 'greenlife-organics',
-      facebook: 'GreenLifeOrganics',
-    },
-    timestamp: '3 days ago',
-    status: 'accepted',
-    brandLogo: 'https://via.placeholder.com/60x60/95E1D3/ffffff?text=GL',
-    message: 'GreenLife Organics has selected you for their wellness ambassador program.',
-  },
-];
-
 export const NotificationsProvider: React.FC<NotificationsProviderProps> = ({ children }) => {
-  const [notifications, setNotificationsState] = useState<NotificationData[]>(demoNotifications);
+  const [notifications, setNotifications] = useState<NotificationData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [unsubscribe, setUnsubscribe] = useState<(() => void) | null>(null);
 
   const unreadCount = notifications.filter(n => n.status === 'new').length;
 
-  const setNotifications = (newNotifications: NotificationData[]) => {
-    setNotificationsState(newNotifications);
+  // Format timestamp for display
+  const formatTimestamp = (date: Date) => {
+    const now = new Date();
+    const diffInMs = now.getTime() - date.getTime();
+    const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
+    const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
+    const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+
+    if (diffInMinutes < 1) return 'Just now';
+    if (diffInMinutes < 60) return `${diffInMinutes} minute${diffInMinutes > 1 ? 's' : ''} ago`;
+    if (diffInHours < 24) return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`;
+    if (diffInDays < 7) return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
+    return date.toLocaleDateString();
   };
 
-  const markAsRead = (id: string) => {
-    setNotificationsState(prev =>
-      prev.map(notification =>
-        notification.id === id ? { ...notification, status: 'viewed' } : notification
-      )
-    );
+  // Add formatted timestamp to notifications
+  const addFormattedTimestamp = (notifications: NotificationData[]) => {
+    return notifications.map(notification => ({
+      ...notification,
+      formattedTimestamp: formatTimestamp(notification.createdAt)
+    }));
   };
 
-  const addNotification = (notification: NotificationData) => {
-    setNotificationsState(prev => [notification, ...prev]);
+  const setupNotificationsListener = (userId: string) => {
+    if (unsubscribe) {
+      unsubscribe();
+    }
+
+    const unsubscribeFn = fetchNotifications(userId, (notifications: NotificationData[]) => {
+      const notificationsWithTimestamp = addFormattedTimestamp(notifications);
+      setNotifications(notificationsWithTimestamp);
+      setLoading(false);
+    });
+
+    setUnsubscribe(() => unsubscribeFn);
+  };
+
+  useEffect(() => {
+    const unsubscribeAuth = auth.onAuthStateChanged((user) => {
+      if (user) {
+        setupNotificationsListener(user.uid);
+      } else {
+        setNotifications([]);
+        setLoading(false);
+        if (unsubscribe) {
+          unsubscribe();
+          setUnsubscribe(null);
+        }
+      }
+    });
+
+    return () => {
+      unsubscribeAuth();
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
+  }, []);
+
+  const markAsRead = async (id: string) => {
+    try {
+      await markNotificationAsRead(id);
+      // The real-time listener will automatically update the UI
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+      throw error;
+    }
+  };
+
+  const updateStatus = async (id: string, status: 'accepted' | 'rejected') => {
+    try {
+      await updateNotificationStatus(id, status);
+      // The real-time listener will automatically update the UI
+    } catch (error) {
+      console.error('Error updating notification status:', error);
+      throw error;
+    }
+  };
+
+  const refreshNotifications = () => {
+    const user = auth.currentUser;
+    if (user) {
+      setupNotificationsListener(user.uid);
+    }
   };
 
   return (
@@ -112,9 +138,10 @@ export const NotificationsProvider: React.FC<NotificationsProviderProps> = ({ ch
       value={{
         notifications,
         unreadCount,
-        setNotifications,
+        loading,
         markAsRead,
-        addNotification,
+        updateStatus,
+        refreshNotifications,
       }}
     >
       {children}

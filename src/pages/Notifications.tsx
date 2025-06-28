@@ -19,6 +19,9 @@ import {
   ListItemSecondaryAction,
   useTheme,
   alpha,
+  CircularProgress,
+  Alert,
+  Snackbar,
 } from '@mui/material';
 import {
   Notifications as NotificationsIcon,
@@ -34,39 +37,58 @@ import {
   Visibility as ViewIcon,
   AccessTime as TimeIcon,
   TrendingUp as IndustryIcon,
+  Refresh as RefreshIcon,
 } from '@mui/icons-material';
 import { useNotifications } from '../contexts/NotificationsContext';
+import { useAuth } from '../contexts/authContext';
 
 const Notifications: React.FC = () => {
   const theme = useTheme();
-  const { notifications, unreadCount, setNotifications, addNotification } = useNotifications();
+  const { 
+    notifications, 
+    unreadCount, 
+    loading, 
+    markAsRead, 
+    updateStatus, 
+    refreshNotifications 
+  } = useNotifications();
+  const { user } = useAuth();
   const [filter, setFilter] = useState<'all' | 'new' | 'viewed' | 'accepted' | 'rejected'>('all');
+  const [processingId, setProcessingId] = useState<string | null>(null);
+  const [snackbar, setSnackbar] = useState<{
+    open: boolean;
+    message: string;
+    severity: 'success' | 'error';
+  }>({ open: false, message: '', severity: 'success' });
 
-  const handleStatusChange = (id: string, newStatus: 'accepted' | 'rejected' | 'viewed') => {
-    const updatedNotifications = notifications.map(notification => 
-      notification.id === id ? { ...notification, status: newStatus } : notification
-    );
-    setNotifications(updatedNotifications);
-  };
+  // Debug logs
+  console.log('DEBUG: currentUserId:', user?.uid);
+  console.log('DEBUG: notifications:', notifications);
 
-  // Function to simulate adding a new notification (for testing)
-  const addDemoNotification = () => {
-    const demoNotification = {
-      id: `demo-${Date.now()}`,
-      brandName: 'Demo Brand',
-      industry: 'Demo Industry',
-      website: 'https://demo.com',
-      location: 'Demo Location',
-      socials: {
-        instagram: '@demo_brand',
-        twitter: '@demobrand',
-      },
-      timestamp: 'Just now',
-      status: 'new' as const,
-      brandLogo: 'https://via.placeholder.com/60x60/9B59B6/ffffff?text=DB',
-      message: 'This is a demo notification to test the blinking red dot feature.',
-    };
-    addNotification(demoNotification);
+  const handleStatusChange = async (id: string, newStatus: 'accepted' | 'rejected' | 'viewed') => {
+    setProcessingId(id);
+    try {
+      if (newStatus === 'viewed') {
+        await markAsRead(id);
+        setSnackbar({ open: true, message: 'Notification marked as read', severity: 'success' });
+      } else {
+        await updateStatus(id, newStatus);
+        setSnackbar({ 
+          open: true, 
+          message: `Notification ${newStatus}`, 
+          severity: 'success' 
+        });
+      }
+    } catch (error) {
+      console.error('Error updating notification status:', error);
+      setSnackbar({ 
+        open: true, 
+        message: 'Failed to update notification status', 
+        severity: 'error' 
+      });
+    } finally {
+      setProcessingId(null);
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -103,14 +125,29 @@ const Notifications: React.FC = () => {
     filter === 'all' || notification.status === filter
   );
 
-  const newNotificationsCount = unreadCount;
+  const handleRefresh = () => {
+    refreshNotifications();
+    setSnackbar({ open: true, message: 'Notifications refreshed', severity: 'success' });
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
+
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
+        <CircularProgress size={60} />
+      </Box>
+    );
+  }
 
   return (
     <Box>
       {/* Header */}
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <Badge badgeContent={newNotificationsCount} color="error">
+          <Badge badgeContent={unreadCount} color="error">
             <NotificationsIcon sx={{ fontSize: 32, mr: 2, color: theme.palette.primary.main }} />
           </Badge>
           <Typography variant="h4" component="h1" sx={{ fontWeight: 700 }}>
@@ -120,10 +157,11 @@ const Notifications: React.FC = () => {
         <Button
           variant="outlined"
           color="primary"
-          onClick={addDemoNotification}
-          sx={{ ml: 2 }}
+          startIcon={<RefreshIcon />}
+          onClick={handleRefresh}
+          disabled={loading}
         >
-          + Add Demo Notification
+          Refresh
         </Button>
       </Box>
 
@@ -223,7 +261,7 @@ const Notifications: React.FC = () => {
                         <Box sx={{ display: 'flex', alignItems: 'center' }}>
                           <TimeIcon sx={{ fontSize: 16, mr: 0.5, color: 'text.secondary' }} />
                           <Typography variant="body2" color="text.secondary">
-                            {notification.timestamp}
+                            {notification.formattedTimestamp}
                           </Typography>
                         </Box>
                       </Box>
@@ -293,25 +331,27 @@ const Notifications: React.FC = () => {
                       <Box sx={{ display: 'flex', gap: 1, mt: 3, justifyContent: 'flex-end' }}>
                         <Button
                           variant="outlined"
-                          startIcon={<ViewIcon />}
+                          startIcon={processingId === notification.id ? <CircularProgress size={16} /> : <ViewIcon />}
                           onClick={() => handleStatusChange(notification.id, 'viewed')}
-                          disabled={notification.status === 'viewed'}
+                          disabled={notification.status === 'viewed' || processingId === notification.id}
                         >
                           Mark as Viewed
                         </Button>
                         <Button
                           variant="contained"
                           color="success"
-                          startIcon={<CheckIcon />}
+                          startIcon={processingId === notification.id ? <CircularProgress size={16} /> : <CheckIcon />}
                           onClick={() => handleStatusChange(notification.id, 'accepted')}
+                          disabled={processingId === notification.id}
                         >
                           Accept
                         </Button>
                         <Button
                           variant="contained"
                           color="error"
-                          startIcon={<CancelIcon />}
+                          startIcon={processingId === notification.id ? <CircularProgress size={16} /> : <CancelIcon />}
                           onClick={() => handleStatusChange(notification.id, 'rejected')}
+                          disabled={processingId === notification.id}
                         >
                           Reject
                         </Button>
@@ -337,6 +377,18 @@ const Notifications: React.FC = () => {
           </Grid>
         )}
       </Box>
+
+      {/* Snackbar for notifications */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
