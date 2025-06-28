@@ -9,17 +9,19 @@ import ContentLibrary from './pages/ContentLibrary';
 import Analytics from './pages/Analytics';
 import AudienceInsights from './pages/AudienceInsights';
 import Profile from './pages/Profile';
-import SignIn from './pages/SignIn';
+import Login from './pages/Login';
 // import Home from './pages/Home'; // Commented out as it's not currently used
 import SignUp from './pages/SignUp';
 import Settings from './pages/Settings';
 import SocialDataScraper from './components/SocialDataScraper';
 import Loader from './components/Loader';
+import { ThemeProvider as CustomThemeProvider } from './context/ThemeContext';
+import { AuthProvider } from './contexts/authContext';
 
 const App: React.FC = () => {
   const [loading, setLoading] = useState(true);
   // For demo purposes, we'll check if user is logged in
-  const isLoggedIn = true; // In a real app, this would come from authentication state
+  const isLoggedIn = false; // Changed to false to allow login page access
 
   useEffect(() => {
     // Hide loader after 1.5 seconds
@@ -33,18 +35,20 @@ const App: React.FC = () => {
   console.log('App rendering with routes');
 
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      {loading && <Loader />}
-      <Router>
-        <Switch>
-          <Route path="/login">
-            {isLoggedIn ? <Redirect to="/" /> : <SignIn />}
-          </Route>
-          
-          <Route path="/signup">
-            {isLoggedIn ? <Redirect to="/" /> : <SignUp />}
-          </Route>
+    <AuthProvider>
+      <CustomThemeProvider>
+        <ThemeProvider theme={theme}>
+          <CssBaseline />
+          {loading && <Loader />}
+          <Router>
+            <Switch>
+              <Route path="/login" exact>
+                <Login />
+              </Route>
+              
+              <Route path="/signup" exact>
+                {isLoggedIn ? <Redirect to="/" /> : <SignUp />}
+              </Route>
           
           <Route path="/home">
             <Redirect to="/" />
@@ -99,6 +103,8 @@ const App: React.FC = () => {
         </Switch>
       </Router>
     </ThemeProvider>
+      </CustomThemeProvider>
+    </AuthProvider>
   );
 };
 

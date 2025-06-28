@@ -12,6 +12,7 @@ import {
   ListItemText,
   Divider,
   Avatar,
+  Button,
 } from '@mui/material';
 import {
   Dashboard as DashboardIcon,
@@ -20,6 +21,7 @@ import {
   People as AudienceIcon,
   Person as ProfileIcon,
   Home as HomeIcon,
+  Login as LoginIcon,
 } from '@mui/icons-material';
 import { useHistory } from 'react-router-dom';
 
@@ -219,13 +221,24 @@ const Sidebar: React.FC<SidebarProps> = ({
         >
           U
         </Avatar>
-        <Box sx={{ ml: 2 }}>
-          <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-            User Name
-          </Typography>
-          <Typography variant="caption" color="text.secondary">
-            user@example.com
-          </Typography>
+        <Box sx={{ ml: 'auto' }}>
+          <Button
+            size="small"
+            variant="outlined"
+            startIcon={<LoginIcon />}
+            onClick={() => history.push('/login')}
+            sx={{
+              borderColor: theme.palette.primary.main,
+              color: theme.palette.primary.main,
+              '&:hover': {
+                borderColor: theme.palette.primary.dark,
+                backgroundColor: theme.palette.primary.main,
+                color: 'white',
+              },
+            }}
+          >
+            Login
+          </Button>
         </Box>
       </UserProfileSection>
     </Box>
