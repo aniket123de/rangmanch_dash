@@ -89,7 +89,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const theme = useTheme();
   const history = useHistory();
-  const { user, userLoggedIn, logout } = useAuth();
+  const { user, userLoggedIn, logout, userData } = useAuth();
 
   const handleNavItemClick = (item: { text: string; id: string; path: string }) => {
     onSectionChange(item.id);
@@ -234,8 +234,15 @@ const Sidebar: React.FC<SidebarProps> = ({
             bgcolor: theme.palette.primary.main,
             boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
           }}
+          src={
+            (userLoggedIn && (user?.photoURL || userData?.profileImage))
+              ? (user?.photoURL || userData?.profileImage)
+              : undefined
+          }
         >
-          {userLoggedIn ? (user?.displayName?.charAt(0) || user?.email?.charAt(0) || 'U') : 'U'}
+          {userLoggedIn && !(user?.photoURL || userData?.profileImage)
+            ? (user?.displayName?.charAt(0) || user?.email?.charAt(0) || 'U')
+            : null}
         </Avatar>
         <Box sx={{ ml: 'auto' }}>
           {userLoggedIn ? (

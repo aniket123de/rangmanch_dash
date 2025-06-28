@@ -195,73 +195,7 @@ const Header: React.FC<HeaderProps> = ({ onSidebarToggle }) => {
         </Box>
 
         {/* Right side - User menu */}
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          {userLoggedIn ? (
-            <>
-              <IconButton
-                onClick={handleMenuOpen}
-                sx={{
-                  color: 'white',
-                  '&:hover': {
-                    background: 'rgba(255,255,255,0.1)',
-                  },
-                }}
-              >
-                <Avatar
-                  sx={{
-                    width: 32,
-                    height: 32,
-                    bgcolor: 'primary.main',
-                    fontSize: '0.875rem',
-                  }}
-                >
-                  {user?.displayName?.charAt(0) || user?.email?.charAt(0) || 'U'}
-                </Avatar>
-              </IconButton>
-              <Menu
-                anchorEl={anchorEl}
-                open={Boolean(anchorEl)}
-                onClose={handleMenuClose}
-                PaperProps={{
-                  sx: {
-                    mt: 1,
-                    minWidth: 200,
-                    background: 'rgba(15, 23, 42, 0.95)',
-                    backdropFilter: 'blur(10px)',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
-                  }
-                }}
-              >
-                <MenuItem onClick={handleProfileClick} sx={{ color: 'white' }}>
-                  <PersonIcon sx={{ mr: 1 }} />
-                  Profile
-                </MenuItem>
-                <Divider sx={{ bgcolor: 'rgba(255, 255, 255, 0.1)' }} />
-                <MenuItem onClick={handleLogout} sx={{ color: 'white' }}>
-                  <LogoutIcon sx={{ mr: 1 }} />
-                  Logout
-                </MenuItem>
-              </Menu>
-            </>
-          ) : (
-            <Button
-              variant="outlined"
-              startIcon={<LoginIcon />}
-              onClick={handleLoginClick}
-              sx={{
-                color: 'white',
-                borderColor: 'rgba(255, 255, 255, 0.3)',
-                '&:hover': {
-                  borderColor: 'white',
-                  background: 'rgba(255, 255, 255, 0.1)',
-                },
-              }}
-            >
-              Login
-            </Button>
-          )}
-        </Box>
+        {/* Removed avatar and user menu for top-right */}
       </Toolbar>
     </AppBar>
   );
