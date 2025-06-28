@@ -2,12 +2,26 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { Form, Input, Button, Checkbox } from "antd";
 import { UserOutlined, LockOutlined, MailOutlined } from "@ant-design/icons";
+import { createOrUpdateCreatorProfile } from '../firebase/firestore';
+import { signUp } from '../firebase/auth';
 
 interface SignUpProps {}
 
 const SignUp: React.FC<SignUpProps> = () => {
-  const onFinish = (values: any) => {
-    console.log("Received values of form: ", values);
+  const onFinish = async (values: any) => {
+    try {
+      // Register user with Firebase Auth (role: 'creator')
+      const { user } = await signUp(values.email, values.password, 'creator', values.username);
+      // Save creator profile to Firestore
+      await createOrUpdateCreatorProfile(user.uid, {
+        name: values.username,
+        email: values.email,
+        avatarUrl: user.photoURL || '',
+        // Add more fields as needed
+      });
+    } catch (error: any) {
+      console.error("Error signing up:", error);
+    }
   };
 
   return (
