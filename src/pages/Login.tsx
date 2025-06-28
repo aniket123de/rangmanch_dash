@@ -4,6 +4,7 @@ import { ThemeContext } from '../context/ThemeContext';
 import { Link, Redirect, useHistory } from 'react-router-dom';
 import { doSignInWithGoogle, doSignInWithEmailAndPassword } from '../firebase/auth';
 import { useAuth } from '../contexts/authContext';
+import { createOrUpdateCreatorProfile } from '../firebase/firestore';
 
 interface StyledWrapperProps {
   $isDark: boolean;
@@ -42,7 +43,16 @@ const Login: React.FC = () => {
       try {
         setIsSigningIn(true);
         setErrorMessage('');
-        await doSignInWithGoogle();
+        const user = await doSignInWithGoogle();
+        // Update creator profile with avatarUrl only if photoURL exists
+        const profileData: any = {
+          name: user.displayName,
+          email: user.email,
+        };
+        if (user.photoURL) {
+          profileData.avatarUrl = user.photoURL;
+        }
+        await createOrUpdateCreatorProfile(user.uid, profileData);
         login(); // Update auth state
         history.push('/'); // Navigate to dashboard
       } catch (error: any) {
