@@ -1,0 +1,53 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Helper function to check if user is accessing their own data
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+    
+    // Helper function to get user role
+    function getUserRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+    
+    // Users collection
+    match /users/{userId} {
+      allow read: if isAuthenticated() && isOwner(userId);
+      allow write: if isAuthenticated() && isOwner(userId);
+    }
+    
+    // Brands collection
+    match /brands/{brandId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && 
+        getUserRole() == 'brand' && 
+        isOwner(brandId);
+    }
+    
+    // Creators collection
+    match /creators/{creatorId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && 
+        getUserRole() == 'creator' && 
+        isOwner(creatorId);
+    }
+    
+    // Collaborations collection
+    match /collaborations/{collabId} {
+      allow read: if isAuthenticated() && 
+        (resource.data.brandId == request.auth.uid || 
+         resource.data.creatorId == request.auth.uid);
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && 
+        (resource.data.brandId == request.auth.uid || 
+         resource.data.creatorId == request.auth.uid);
+    }
+  }
+} 

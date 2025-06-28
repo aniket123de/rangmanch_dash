@@ -16,12 +16,111 @@ import Settings from './pages/Settings';
 import SocialDataScraper from './components/SocialDataScraper';
 import Loader from './components/Loader';
 import { ThemeProvider as CustomThemeProvider } from './context/ThemeContext';
-import { AuthProvider } from './contexts/authContext';
+import { AuthProvider, useAuth } from './contexts/authContext';
+
+const AppRoutes: React.FC = () => {
+  const { userLoggedIn, loading } = useAuth();
+
+  if (loading) {
+    return <Loader />;
+  }
+
+  return (
+    <Switch>
+      {/* Public routes */}
+      <Route path="/login" exact>
+        {userLoggedIn ? <Redirect to="/" /> : <Login />}
+      </Route>
+      
+      <Route path="/signup" exact>
+        {userLoggedIn ? <Redirect to="/" /> : <SignUp />}
+      </Route>
+      
+      {/* Protected routes */}
+      <Route path="/home">
+        <Redirect to="/" />
+      </Route>
+      
+      <Route path="/content-library">
+        {userLoggedIn ? (
+          <DashboardLayout>
+            <ContentLibrary />
+          </DashboardLayout>
+        ) : (
+          <Redirect to="/login" />
+        )}
+      </Route>
+      
+      <Route path="/analytics">
+        {userLoggedIn ? (
+          <DashboardLayout>
+            <Analytics />
+          </DashboardLayout>
+        ) : (
+          <Redirect to="/login" />
+        )}
+      </Route>
+      
+      <Route path="/audience-insights">
+        {userLoggedIn ? (
+          <DashboardLayout>
+            <AudienceInsights />
+          </DashboardLayout>
+        ) : (
+          <Redirect to="/login" />
+        )}
+      </Route>
+      
+      <Route path="/profile">
+        {userLoggedIn ? (
+          <DashboardLayout>
+            <Profile />
+          </DashboardLayout>
+        ) : (
+          <Redirect to="/login" />
+        )}
+      </Route>
+      
+      <Route path="/settings">
+        {userLoggedIn ? (
+          <DashboardLayout>
+            <Settings />
+          </DashboardLayout>
+        ) : (
+          <Redirect to="/login" />
+        )}
+      </Route>
+      
+      <Route path="/scrape">
+        {userLoggedIn ? (
+          <DashboardLayout>
+            <SocialDataScraper />
+          </DashboardLayout>
+        ) : (
+          <Redirect to="/login" />
+        )}
+      </Route>
+      
+      <Route path="/" exact>
+        {userLoggedIn ? (
+          <DashboardLayout>
+            <Dashboard />
+          </DashboardLayout>
+        ) : (
+          <Redirect to="/login" />
+        )}
+      </Route>
+      
+      {/* Redirect any unknown routes */}
+      <Route path="*">
+        <Redirect to={userLoggedIn ? "/" : "/login"} />
+      </Route>
+    </Switch>
+  );
+};
 
 const App: React.FC = () => {
   const [loading, setLoading] = useState(true);
-  // For demo purposes, we'll check if user is logged in
-  const isLoggedIn = false; // Changed to false to allow login page access
 
   useEffect(() => {
     // Hide loader after 1.5 seconds
@@ -41,68 +140,9 @@ const App: React.FC = () => {
           <CssBaseline />
           {loading && <Loader />}
           <Router>
-            <Switch>
-              <Route path="/login" exact>
-                <Login />
-              </Route>
-              
-              <Route path="/signup" exact>
-                {isLoggedIn ? <Redirect to="/" /> : <SignUp />}
-              </Route>
-          
-          <Route path="/home">
-            <Redirect to="/" />
-          </Route>
-          
-          <Route path="/content-library">
-            <DashboardLayout>
-              <ContentLibrary />
-            </DashboardLayout>
-          </Route>
-          
-          <Route path="/analytics">
-            <DashboardLayout>
-              <Analytics />
-            </DashboardLayout>
-          </Route>
-          
-          <Route path="/audience-insights">
-            <DashboardLayout>
-              <AudienceInsights />
-            </DashboardLayout>
-          </Route>
-          
-          <Route path="/profile">
-            <DashboardLayout>
-              <Profile />
-            </DashboardLayout>
-          </Route>
-          
-          <Route path="/settings">
-            <DashboardLayout>
-              <Settings />
-            </DashboardLayout>
-          </Route>
-          
-          <Route path="/scrape">
-            <DashboardLayout>
-              <SocialDataScraper />
-            </DashboardLayout>
-          </Route>
-          
-          <Route path="/" exact>
-            <DashboardLayout>
-              <Dashboard />
-            </DashboardLayout>
-          </Route>
-          
-          {/* Redirect any unknown routes to Dashboard */}
-          <Route path="*">
-            <Redirect to="/" />
-          </Route>
-        </Switch>
-      </Router>
-    </ThemeProvider>
+            <AppRoutes />
+          </Router>
+        </ThemeProvider>
       </CustomThemeProvider>
     </AuthProvider>
   );

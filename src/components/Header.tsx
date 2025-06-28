@@ -5,16 +5,57 @@ import {
   IconButton,
   Toolbar,
   Typography,
+  Button,
+  Avatar,
+  Menu,
+  MenuItem,
+  Divider,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
+  Logout as LogoutIcon,
+  Person as PersonIcon,
+  Login as LoginIcon,
 } from '@mui/icons-material';
+import { useHistory } from 'react-router-dom';
+import { useAuth } from '../contexts/authContext';
 
 interface HeaderProps {
   onSidebarToggle?: () => void;
 }
 
 const Header: React.FC<HeaderProps> = ({ onSidebarToggle }) => {
+  const { user, userLoggedIn, logout } = useAuth();
+  const history = useHistory();
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      history.push('/login');
+      handleMenuClose();
+    } catch (error) {
+      console.error('Error logging out:', error);
+    }
+  };
+
+  const handleProfileClick = () => {
+    history.push('/profile');
+    handleMenuClose();
+  };
+
+  const handleLoginClick = () => {
+    history.push('/login');
+  };
+
   return (
     <AppBar 
       position="fixed" 
@@ -58,7 +99,7 @@ const Header: React.FC<HeaderProps> = ({ onSidebarToggle }) => {
       }} />
       
       {/* Floating particles */}
-      {[...Array(8)].map((_, i) => (
+      {[...Array(5)].map((_, i) => (
         <Box key={i} sx={{
           position: 'absolute',
           width: 2,
@@ -82,17 +123,16 @@ const Header: React.FC<HeaderProps> = ({ onSidebarToggle }) => {
           px: { xs: 2, sm: 3 },
           minHeight: { xs: '64px', sm: '74px' },
           display: 'flex',
-          justifyContent: 'center',
+          justifyContent: 'space-between',
           alignItems: 'center',
           position: 'relative',
-          flexDirection: 'column'
         }}
       >
-        {/* Main header content */}
+        {/* Left side - Menu button and title */}
         <Box sx={{ 
           display: 'flex', 
-          width: '100%',
-          alignItems: 'center'
+          alignItems: 'center',
+          flex: 1
         }}>
           {onSidebarToggle && (
             <IconButton
@@ -112,17 +152,14 @@ const Header: React.FC<HeaderProps> = ({ onSidebarToggle }) => {
             </IconButton>
           )}
 
-          <Box sx={{ flexGrow: 1 }} />
-
           <Typography 
             variant="h4" 
             component="div" 
             sx={{ 
-              textAlign: 'center',
               fontWeight: 'bold',
               fontFamily: "'Poppins', 'Segoe UI', sans-serif",
               letterSpacing: '0.5px',
-              fontSize: { xs: '1.9rem', sm: '2.5rem' },
+              fontSize: { xs: '1.5rem', sm: '2rem' },
               background: `linear-gradient(45deg, 
                 #9d4edd,
                 #c77dff,
@@ -147,53 +184,83 @@ const Header: React.FC<HeaderProps> = ({ onSidebarToggle }) => {
                 borderRadius: '50%',
               },
               '@keyframes gradient': {
-                '0%': {
-                  backgroundPosition: '0% 50%'
-                },
-                '50%': {
-                  backgroundPosition: '100% 50%'
-                },
-                '100%': {
-                  backgroundPosition: '0% 50%'
-                }
-              }
+                '0%': { backgroundPosition: '0% 50%' },
+                '50%': { backgroundPosition: '100% 50%' },
+                '100%': { backgroundPosition: '0% 50%' },
+              },
             }}
           >
-            Rangmanch Dashboard
+            Rangmanch
           </Typography>
-
-          <Box sx={{ flexGrow: 1 }} />
         </Box>
 
-        {/* Scrolling text banner */}
-        <Box
-          sx={{
-            width: '100%',
-            overflow: 'hidden',
-            background: 'rgb(195, 215, 228)',
-            mt: 1,
-            height: '24px',
-            display: 'flex',
-            alignItems: 'center',
-            position: 'relative'
-          }}
-        >
-          <Typography
-            sx={{
-              color: 'rgba(159, 0, 0, 0.87)',
-              whiteSpace: 'nowrap',
-              position: 'absolute',
-              fontWeight: 'bold',
-              left: 0,
-              animation: 'scrollText 20s linear infinite',
-              '@keyframes scrollText': {
-                '0%': { transform: 'translateX(100vw)' },
-                '100%': { transform: 'translateX(-100%)' }
-              }
-            }}
-          >
-            As Web Scraping of Facebook & Linkedin is paid. We couldn't integrate that :)
-          </Typography>
+        {/* Right side - User menu */}
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          {userLoggedIn ? (
+            <>
+              <IconButton
+                onClick={handleMenuOpen}
+                sx={{
+                  color: 'white',
+                  '&:hover': {
+                    background: 'rgba(255,255,255,0.1)',
+                  },
+                }}
+              >
+                <Avatar
+                  sx={{
+                    width: 32,
+                    height: 32,
+                    bgcolor: 'primary.main',
+                    fontSize: '0.875rem',
+                  }}
+                >
+                  {user?.displayName?.charAt(0) || user?.email?.charAt(0) || 'U'}
+                </Avatar>
+              </IconButton>
+              <Menu
+                anchorEl={anchorEl}
+                open={Boolean(anchorEl)}
+                onClose={handleMenuClose}
+                PaperProps={{
+                  sx: {
+                    mt: 1,
+                    minWidth: 200,
+                    background: 'rgba(15, 23, 42, 0.95)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+                  }
+                }}
+              >
+                <MenuItem onClick={handleProfileClick} sx={{ color: 'white' }}>
+                  <PersonIcon sx={{ mr: 1 }} />
+                  Profile
+                </MenuItem>
+                <Divider sx={{ bgcolor: 'rgba(255, 255, 255, 0.1)' }} />
+                <MenuItem onClick={handleLogout} sx={{ color: 'white' }}>
+                  <LogoutIcon sx={{ mr: 1 }} />
+                  Logout
+                </MenuItem>
+              </Menu>
+            </>
+          ) : (
+            <Button
+              variant="outlined"
+              startIcon={<LoginIcon />}
+              onClick={handleLoginClick}
+              sx={{
+                color: 'white',
+                borderColor: 'rgba(255, 255, 255, 0.3)',
+                '&:hover': {
+                  borderColor: 'white',
+                  background: 'rgba(255, 255, 255, 0.1)',
+                },
+              }}
+            >
+              Login
+            </Button>
+          )}
         </Box>
       </Toolbar>
     </AppBar>

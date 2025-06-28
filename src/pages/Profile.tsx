@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -9,6 +9,7 @@ import {
   Paper,
   Alert,
   InputAdornment,
+  CircularProgress,
 } from '@mui/material';
 import {
   Person as PersonIcon,
@@ -22,54 +23,153 @@ import {
   Twitter as TwitterIcon,
   Instagram as InstagramIcon,
   LinkedIn as LinkedInIcon,
+  YouTube as YouTubeIcon,
 } from '@mui/icons-material';
+import { useAuth } from '../contexts/authContext';
+import { createOrUpdateCreatorProfile, getMyCreatorProfile } from '../firebase/firestore';
 
 const Profile: React.FC = () => {
+  const { user, userData, updateUserData } = useAuth();
   const [editing, setEditing] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string>('');
   
-  // Mock user data
-  const [userData, setUserData] = useState({
-    name: 'Rahul Sharma',
-    email: 'rahul.sharma@example.com',
-    phone: '+91 9876543210',
+  // Profile data state
+  const [profileData, setProfileData] = useState({
+    name: '',
+    email: '',
+    phone: '',
     role: 'Content Creator',
-    bio: 'Creative content producer specializing in cultural storytelling and theatrical presentations. 5+ years experience in digital content creation and performance art promotion.',
-    location: 'Mumbai, India',
-    avatarUrl: 'https://randomuser.me/api/portraits/men/32.jpg',
-    joinDate: 'January 2022',
+    bio: '',
+    location: '',
+    avatarUrl: '',
+    niche: '',
+    categories: [] as string[],
     socialLinks: {
-      twitter: '@rahulsharma',
-      instagram: '@rahulsharma_creates',
-      linkedin: 'rahul-sharma-creates',
+      twitter: '',
+      instagram: '',
+      linkedin: '',
+      youtube: '',
     },
   });
 
-  const handleEditToggle = () => {
+  // Load profile data when user changes
+  useEffect(() => {
+    const loadProfileData = async () => {
+      if (user) {
+        try {
+          setLoading(true);
+          // Try to get creator profile
+          const creatorProfile = await getMyCreatorProfile(user.uid);
+          
+          setProfileData({
+            name: (creatorProfile as any)?.name || user.displayName || '',
+            email: userData?.email || user.email || '',
+            phone: (creatorProfile as any)?.phone || '',
+            role: userData?.role || 'Content Creator',
+            bio: (creatorProfile as any)?.bio || '',
+            location: (creatorProfile as any)?.location || '',
+            avatarUrl: (creatorProfile as any)?.avatarUrl || user.photoURL || '',
+            niche: (creatorProfile as any)?.niche || '',
+            categories: (creatorProfile as any)?.categories || [],
+            socialLinks: {
+              twitter: (creatorProfile as any)?.socials?.twitter || '',
+              instagram: (creatorProfile as any)?.socials?.instagram || '',
+              linkedin: (creatorProfile as any)?.socials?.linkedin || '',
+              youtube: (creatorProfile as any)?.socials?.youtube || '',
+            },
+          });
+        } catch (error) {
+          console.error('Error loading profile:', error);
+          // Set basic data from user
+          setProfileData(prev => ({
+            ...prev,
+            name: user.displayName || '',
+            email: user.email || '',
+            role: userData?.role || 'Content Creator',
+          }));
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadProfileData();
+  }, [user, userData]);
+
+  const handleEditToggle = async () => {
     if (editing) {
-      // Save logic would go here
-      setSaveSuccess(true);
-      setTimeout(() => setSaveSuccess(false), 3000);
+      // Save profile data
+      try {
+        setLoading(true);
+        setError('');
+        
+        const creatorData = {
+          name: profileData.name,
+          phone: profileData.phone,
+          bio: profileData.bio,
+          location: profileData.location,
+          avatarUrl: profileData.avatarUrl,
+          niche: profileData.niche,
+          categories: profileData.categories,
+          socials: profileData.socialLinks,
+        };
+
+        await createOrUpdateCreatorProfile(user!.uid, creatorData);
+        
+        setSaveSuccess(true);
+        setTimeout(() => setSaveSuccess(false), 3000);
+        setEditing(false);
+      } catch (error: any) {
+        setError(error.message);
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      setEditing(true);
+      setError('');
     }
-    setEditing(!editing);
   };
 
-  const handleUserDataChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleProfileDataChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     
     if (name.includes('.')) {
       const [parent, child] = name.split('.');
-      setUserData({
-        ...userData,
+      setProfileData({
+        ...profileData,
         [parent]: {
-          ...userData[parent as keyof typeof userData] as Record<string, any>,
+          ...profileData[parent as keyof typeof profileData] as Record<string, any>,
           [child]: value
         }
       });
     } else {
-      setUserData({ ...userData, [name]: value });
+      setProfileData({ ...profileData, [name]: value });
     }
   };
+
+  const avatarSrc = (profileData.avatarUrl && profileData.avatarUrl.trim() !== '')
+    ? profileData.avatarUrl
+    : (user?.photoURL || '');
+
+  if (loading && !profileData.name) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (!user) {
+    return (
+      <Box>
+        <Alert severity="warning">
+          Please log in to view your profile.
+        </Alert>
+      </Box>
+    );
+  }
 
   return (
     <Box>
@@ -83,6 +183,12 @@ const Profile: React.FC = () => {
         </Alert>
       )}
       
+      {error && (
+        <Alert severity="error" sx={{ mb: 3 }}>
+          {error}
+        </Alert>
+      )}
+      
       <Paper sx={{ mb: 4 }}>
         <Box sx={{ p: 3 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
@@ -92,16 +198,23 @@ const Profile: React.FC = () => {
               onClick={handleEditToggle}
               variant={editing ? "contained" : "outlined"}
               color={editing ? "primary" : "secondary"}
+              disabled={loading}
             >
-              {editing ? "Save Changes" : "Edit Profile"}
+              {loading ? (
+                <CircularProgress size={20} sx={{ mr: 1 }} />
+              ) : editing ? (
+                "Save Changes"
+              ) : (
+                "Edit Profile"
+              )}
             </Button>
           </Box>
           
           <Grid container spacing={4}>
             <Grid item xs={12} md={4} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
               <Avatar
-                src={userData.avatarUrl}
-                alt={userData.name}
+                src={avatarSrc}
+                alt={profileData.name}
                 sx={{ width: 120, height: 120, mb: 2 }}
               />
               
@@ -132,7 +245,7 @@ const Profile: React.FC = () => {
                   Member since
                 </Typography>
                 <Typography variant="body1" fontWeight="bold">
-                  {userData.joinDate}
+                  {userData?.createdAt ? new Date(userData.createdAt.toDate()).toLocaleDateString() : 'Recently'}
                 </Typography>
               </Box>
             </Grid>
@@ -144,8 +257,8 @@ const Profile: React.FC = () => {
                     fullWidth
                     label="Full Name"
                     name="name"
-                    value={userData.name}
-                    onChange={handleUserDataChange}
+                    value={profileData.name}
+                    onChange={handleProfileDataChange}
                     disabled={!editing}
                     variant="outlined"
                     InputProps={{
@@ -162,10 +275,10 @@ const Profile: React.FC = () => {
                     fullWidth
                     label="Role"
                     name="role"
-                    value={userData.role}
-                    onChange={handleUserDataChange}
-                    disabled={!editing}
+                    value={profileData.role}
+                    disabled={true}
                     variant="outlined"
+                    helperText="Role cannot be changed"
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
@@ -174,9 +287,8 @@ const Profile: React.FC = () => {
                     label="Email"
                     name="email"
                     type="email"
-                    value={userData.email}
-                    onChange={handleUserDataChange}
-                    disabled={!editing}
+                    value={profileData.email}
+                    disabled={true}
                     variant="outlined"
                     InputProps={{
                       startAdornment: (
@@ -185,6 +297,7 @@ const Profile: React.FC = () => {
                         </InputAdornment>
                       ),
                     }}
+                    helperText="Email cannot be changed"
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
@@ -192,8 +305,8 @@ const Profile: React.FC = () => {
                     fullWidth
                     label="Phone"
                     name="phone"
-                    value={userData.phone}
-                    onChange={handleUserDataChange}
+                    value={profileData.phone}
+                    onChange={handleProfileDataChange}
                     disabled={!editing}
                     variant="outlined"
                     InputProps={{
@@ -205,26 +318,25 @@ const Profile: React.FC = () => {
                     }}
                   />
                 </Grid>
-                <Grid item xs={12}>
+                <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
-                    label="Bio"
-                    name="bio"
-                    value={userData.bio}
-                    onChange={handleUserDataChange}
+                    label="Niche"
+                    name="niche"
+                    value={profileData.niche}
+                    onChange={handleProfileDataChange}
                     disabled={!editing}
                     variant="outlined"
-                    multiline
-                    rows={4}
+                    placeholder="e.g., Lifestyle, Fashion, Tech"
                   />
                 </Grid>
-                <Grid item xs={12}>
+                <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
                     label="Location"
                     name="location"
-                    value={userData.location}
-                    onChange={handleUserDataChange}
+                    value={profileData.location}
+                    onChange={handleProfileDataChange}
                     disabled={!editing}
                     variant="outlined"
                     InputProps={{
@@ -236,6 +348,20 @@ const Profile: React.FC = () => {
                     }}
                   />
                 </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="Bio"
+                    name="bio"
+                    value={profileData.bio}
+                    onChange={handleProfileDataChange}
+                    disabled={!editing}
+                    variant="outlined"
+                    multiline
+                    rows={4}
+                    placeholder="Tell us about yourself and your content..."
+                  />
+                </Grid>
               </Grid>
             </Grid>
           </Grid>
@@ -245,33 +371,16 @@ const Profile: React.FC = () => {
               Social Media Profiles
             </Typography>
             <Grid container spacing={2}>
-              <Grid item xs={12} sm={4}>
-                <TextField
-                  fullWidth
-                  label="Twitter"
-                  name="socialLinks.twitter"
-                  value={userData.socialLinks.twitter}
-                  onChange={handleUserDataChange}
-                  disabled={!editing}
-                  variant="outlined"
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <TwitterIcon color="primary" />
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-              </Grid>
-              <Grid item xs={12} sm={4}>
+              <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
                   label="Instagram"
                   name="socialLinks.instagram"
-                  value={userData.socialLinks.instagram}
-                  onChange={handleUserDataChange}
+                  value={profileData.socialLinks.instagram}
+                  onChange={handleProfileDataChange}
                   disabled={!editing}
                   variant="outlined"
+                  placeholder="@username"
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
@@ -281,15 +390,54 @@ const Profile: React.FC = () => {
                   }}
                 />
               </Grid>
-              <Grid item xs={12} sm={4}>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="YouTube"
+                  name="socialLinks.youtube"
+                  value={profileData.socialLinks.youtube}
+                  onChange={handleProfileDataChange}
+                  disabled={!editing}
+                  variant="outlined"
+                  placeholder="@channel"
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <YouTubeIcon sx={{ color: '#FF0000' }} />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Twitter"
+                  name="socialLinks.twitter"
+                  value={profileData.socialLinks.twitter}
+                  onChange={handleProfileDataChange}
+                  disabled={!editing}
+                  variant="outlined"
+                  placeholder="@username"
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <TwitterIcon color="primary" />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
                   label="LinkedIn"
                   name="socialLinks.linkedin"
-                  value={userData.socialLinks.linkedin}
-                  onChange={handleUserDataChange}
+                  value={profileData.socialLinks.linkedin}
+                  onChange={handleProfileDataChange}
                   disabled={!editing}
                   variant="outlined"
+                  placeholder="profile-url"
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">

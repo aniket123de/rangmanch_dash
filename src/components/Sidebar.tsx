@@ -22,8 +22,10 @@ import {
   Person as ProfileIcon,
   Home as HomeIcon,
   Login as LoginIcon,
+  Logout as LogoutIcon,
 } from '@mui/icons-material';
 import { useHistory } from 'react-router-dom';
+import { useAuth } from '../contexts/authContext';
 
 interface SidebarProps {
   open: boolean;
@@ -87,6 +89,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const theme = useTheme();
   const history = useHistory();
+  const { user, userLoggedIn, logout } = useAuth();
 
   const handleNavItemClick = (item: { text: string; id: string; path: string }) => {
     onSectionChange(item.id);
@@ -99,6 +102,19 @@ const Sidebar: React.FC<SidebarProps> = ({
     }
     
     if (isMobile) onClose();
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      history.push('/login');
+    } catch (error) {
+      console.error('Error logging out:', error);
+    }
+  };
+
+  const handleLoginClick = () => {
+    history.push('/login');
   };
 
   const renderNavItem = (item: { text: string; icon: React.ReactNode; id: string; path: string }) => {
@@ -219,52 +235,67 @@ const Sidebar: React.FC<SidebarProps> = ({
             boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
           }}
         >
-          U
+          {userLoggedIn ? (user?.displayName?.charAt(0) || user?.email?.charAt(0) || 'U') : 'U'}
         </Avatar>
         <Box sx={{ ml: 'auto' }}>
-          <Button
-            size="small"
-            variant="outlined"
-            startIcon={<LoginIcon />}
-            onClick={() => history.push('/login')}
-            sx={{
-              borderColor: theme.palette.primary.main,
-              color: theme.palette.primary.main,
-              '&:hover': {
-                borderColor: theme.palette.primary.dark,
-                backgroundColor: theme.palette.primary.main,
-                color: 'white',
-              },
-            }}
-          >
-            Login
-          </Button>
+          {userLoggedIn ? (
+            <Button
+              size="small"
+              variant="outlined"
+              startIcon={<LogoutIcon />}
+              onClick={handleLogout}
+              sx={{
+                borderColor: theme.palette.error.main,
+                color: theme.palette.error.main,
+                '&:hover': {
+                  borderColor: theme.palette.error.dark,
+                  backgroundColor: theme.palette.error.main,
+                  color: 'white',
+                },
+              }}
+            >
+              Logout
+            </Button>
+          ) : (
+            <Button
+              size="small"
+              variant="outlined"
+              startIcon={<LoginIcon />}
+              onClick={handleLoginClick}
+              sx={{
+                borderColor: theme.palette.primary.main,
+                color: theme.palette.primary.main,
+                '&:hover': {
+                  borderColor: theme.palette.primary.dark,
+                  backgroundColor: theme.palette.primary.main,
+                  color: 'white',
+                },
+              }}
+            >
+              Login
+            </Button>
+          )}
         </Box>
       </UserProfileSection>
     </Box>
   );
 
-  return isMobile ? (
-    <Drawer
-      variant="temporary"
+  return (
+    <StyledDrawer
+      variant={isMobile ? "temporary" : "persistent"}
+      anchor="left"
       open={open}
       onClose={onClose}
       ModalProps={{
-        keepMounted: true,
+        keepMounted: true, // Better open performance on mobile.
       }}
-      PaperProps={{
-        sx: {
-          width: drawerWidth,
-          background: theme.palette.mode === 'dark' ? '#1a2035' : '#ffffff',
-          borderRight: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'}`,
-          boxShadow: theme.palette.mode === 'dark' ? '0 8px 24px 0 rgba(0, 0, 0, 0.2)' : '0 8px 24px 0 rgba(0, 0, 0, 0.05)',
-        },
+      sx={{
+        display: { xs: isMobile ? 'block' : 'none', sm: 'block' },
+        '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
       }}
     >
       {drawerContent}
-    </Drawer>
-  ) : (
-    <StyledDrawer variant="permanent">{drawerContent}</StyledDrawer>
+    </StyledDrawer>
   );
 };
 

@@ -4,14 +4,13 @@ import {
   signOut,
   updateProfile,
   GoogleAuthProvider,
-  signInWithPopup,
-  User
+  signInWithPopup
 } from 'firebase/auth';
 import { doc, setDoc, serverTimestamp, getDoc } from 'firebase/firestore';
 import { auth, db } from './firebase';
 
 // Sign up with email, password, and role
-export const signUp = async (email: string, password: string, role: 'brand' | 'creator', displayName: string = ''): Promise<{ user: User, role: string }> => {
+export const signUp = async (email, password, role, displayName = '') => {
   try {
     // Create user with Firebase Auth
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
@@ -25,7 +24,7 @@ export const signUp = async (email: string, password: string, role: 'brand' | 'c
     // Save user data to Firestore
     await setDoc(doc(db, 'users', user.uid), {
       email: user.email,
-      role: role,
+      role: role, // 'brand' or 'creator'
       displayName: displayName || user.displayName,
       createdAt: serverTimestamp(),
       uid: user.uid
@@ -38,7 +37,7 @@ export const signUp = async (email: string, password: string, role: 'brand' | 'c
 };
 
 // Sign in with email and password
-export const signIn = async (email: string, password: string): Promise<User> => {
+export const signIn = async (email, password) => {
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     return userCredential.user;
@@ -48,7 +47,7 @@ export const signIn = async (email: string, password: string): Promise<User> => 
 };
 
 // Sign in with Google
-export const signInWithGoogle = async (): Promise<User> => {
+export const signInWithGoogle = async () => {
   try {
     const provider = new GoogleAuthProvider();
     const result = await signInWithPopup(auth, provider);
@@ -59,6 +58,7 @@ export const signInWithGoogle = async (): Promise<User> => {
     
     if (!userDoc.exists()) {
       // New user - prompt for role selection
+      // You might want to redirect to a role selection page
       console.log('New Google user - needs role selection');
     }
 
@@ -69,7 +69,7 @@ export const signInWithGoogle = async (): Promise<User> => {
 };
 
 // Sign out
-export const signOutUser = async (): Promise<void> => {
+export const signOutUser = async () => {
   try {
     await signOut(auth);
   } catch (error) {
@@ -78,15 +78,15 @@ export const signOutUser = async (): Promise<void> => {
 };
 
 // Get current user
-export const getCurrentUser = (): User | null => {
+export const getCurrentUser = () => {
   return auth.currentUser;
 };
 
-// Legacy functions for compatibility
-export const doSignInWithEmailAndPassword = async (email: string, password: string): Promise<User> => {
+// Legacy function for compatibility
+export const doSignInWithEmailAndPassword = async (email, password) => {
   return signIn(email, password);
 };
 
-export const doSignInWithGoogle = async (): Promise<User> => {
+export const doSignInWithGoogle = async () => {
   return signInWithGoogle();
-};
+}; 
