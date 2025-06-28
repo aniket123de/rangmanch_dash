@@ -12,7 +12,7 @@ const SignUp: React.FC<SignUpProps> = () => {
     try {
       // Register user with Firebase Auth (role: 'creator')
       const { user } = await signUp(values.email, values.password, 'creator', values.username);
-      // Save creator profile to Firestore
+      // Save creator profile to Firestore, including Google profile image if available
       await createOrUpdateCreatorProfile(user.uid, {
         name: values.username,
         email: values.email,
