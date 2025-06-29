@@ -1735,17 +1735,6 @@ const SocialDataVisualizer: React.FC = () => {
                               )}
                             </Box>
                           </Grid>
-
-                          {/* Sentiment Analysis Section */}
-                          <Box sx={{ mt: 4 }}>
-                            <Typography variant="h6" gutterBottom sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}>
-                              Sentiment Analysis
-                            </Typography>
-                            <Typography variant="body2" color="text.secondary" paragraph sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
-                              Analyze the sentiment of your Instagram posts
-                            </Typography>
-                            <SentimentAnalysis />
-                          </Box>
                         </Grid>
                       )}
                     </>

@@ -98,6 +98,7 @@ const navigationItems = [
   { text: 'Analytics', icon: <AnalyticsIcon />, id: 'analytics', path: '/analytics' },
   { text: 'Audience Insights', icon: <AudienceIcon />, id: 'audience-insights', path: '/audience-insights' },
   { text: 'Content Suggestion', icon: <LightbulbIcon />, id: 'content-suggestion', path: 'https://rangmanch.vercel.app/content-suggestion' },
+  { text: 'Sentiment Analysis', icon: <InsertEmoticonIcon />, id: 'sentiment-analysis', path: 'https://rangmanch.vercel.app/sentiment-analysis' },
   { text: 'Notifications', icon: <NotificationsIcon />, id: 'notifications', path: '/notifications' },
 ];
 
