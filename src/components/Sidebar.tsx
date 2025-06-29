@@ -25,6 +25,7 @@ import {
   Logout as LogoutIcon,
   Notifications as NotificationsIcon,
   InsertEmoticon as InsertEmoticonIcon,
+  Lightbulb as LightbulbIcon,
 } from '@mui/icons-material';
 import { useHistory } from 'react-router-dom';
 import { useAuth } from '../contexts/authContext';
@@ -96,6 +97,7 @@ const navigationItems = [
   { text: 'Content Library', icon: <ContentLibraryIcon />, id: 'content-library', path: '/content-library' },
   { text: 'Analytics', icon: <AnalyticsIcon />, id: 'analytics', path: '/analytics' },
   { text: 'Audience Insights', icon: <AudienceIcon />, id: 'audience-insights', path: '/audience-insights' },
+  { text: 'Content Suggestion', icon: <LightbulbIcon />, id: 'content-suggestion', path: 'https://rangmanch.vercel.app/content-suggestion' },
   { text: 'Notifications', icon: <NotificationsIcon />, id: 'notifications', path: '/notifications' },
 ];
 
