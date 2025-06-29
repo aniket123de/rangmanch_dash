@@ -45,6 +45,7 @@ ChartJS.register(
   PointElement,
   LineElement,
   Title,
+  
   Tooltip,
   Legend,
   BarElement,
