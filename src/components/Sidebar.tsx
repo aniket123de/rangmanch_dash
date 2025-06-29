@@ -24,10 +24,12 @@ import {
   Login as LoginIcon,
   Logout as LogoutIcon,
   Notifications as NotificationsIcon,
+  InsertEmoticon as InsertEmoticonIcon,
 } from '@mui/icons-material';
 import { useHistory } from 'react-router-dom';
 import { useAuth } from '../contexts/authContext';
 import { useNotifications } from '../contexts/NotificationsContext';
+import SentimentAnalysisPanel from './SentimentAnalysisPanel';
 
 interface SidebarProps {
   open: boolean;
@@ -95,6 +97,7 @@ const navigationItems = [
   { text: 'Analytics', icon: <AnalyticsIcon />, id: 'analytics', path: '/analytics' },
   { text: 'Audience Insights', icon: <AudienceIcon />, id: 'audience-insights', path: '/audience-insights' },
   { text: 'Notifications', icon: <NotificationsIcon />, id: 'notifications', path: '/notifications' },
+  { text: 'Sentiment Analysis', icon: <InsertEmoticonIcon />, id: 'sentiment-analysis', path: '/sentiment-analysis' },
 ];
 
 // User related items
@@ -116,14 +119,12 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   const handleNavItemClick = (item: { text: string; id: string; path: string }) => {
     onSectionChange(item.id);
-    
     // Handle external link for Home
     if (item.path.startsWith('http')) {
       window.location.href = item.path;
     } else {
       history.push(item.path);
     }
-    
     if (isMobile) onClose();
   };
 
