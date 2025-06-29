@@ -33,6 +33,7 @@ import {
 } from 'chart.js';
 import { Bar, Line, Pie } from 'react-chartjs-2';
 import api, { YouTubeData, InstagramData } from '../services/api';
+import SentimentAnalysis from './SentimentAnalysis';
 
 // Register ChartJS components
 ChartJS.register(
@@ -1734,6 +1735,17 @@ const SocialDataVisualizer: React.FC = () => {
                               )}
                             </Box>
                           </Grid>
+
+                          {/* Sentiment Analysis Section */}
+                          <Box sx={{ mt: 4 }}>
+                            <Typography variant="h6" gutterBottom sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}>
+                              Sentiment Analysis
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary" paragraph sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                              Analyze the sentiment of your Instagram posts
+                            </Typography>
+                            <SentimentAnalysis />
+                          </Box>
                         </Grid>
                       )}
                     </>
