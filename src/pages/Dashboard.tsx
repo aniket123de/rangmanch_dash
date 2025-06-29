@@ -3,6 +3,7 @@ import { Box, Grid, Typography, useTheme, useMediaQuery } from '@mui/material';
 import AnimatedButton from '../components/AnimatedButton';
 import SocialDataScraper from '../components/SocialDataScraper';
 import SocialDataVisualizer from '../components/SocialDataVisualizer';
+import SentimentAnalysis from '../components/SentimentAnalysis';
 
 const Dashboard: React.FC = () => {
   const theme = useTheme();
@@ -51,6 +52,16 @@ const Dashboard: React.FC = () => {
             Visualize the scraped data with interactive charts
           </Typography>
           <SocialDataVisualizer />
+        </Grid>
+
+        <Grid item xs={12} sx={{ mt: 4 }}>
+          <Typography variant="h6" gutterBottom>
+            Step 3: Sentiment Analysis
+          </Typography>
+          <Typography variant="body2" color="text.secondary" paragraph>
+            Analyze the sentiment of any social media post
+          </Typography>
+          <SentimentAnalysis />
         </Grid>
       </Grid>
     </Box>
