@@ -141,7 +141,7 @@ const SocialDataScraper: React.FC = () => {
       startPolling(task.task_id);
     } catch (err) {
       setLoading(false);
-      setError('Failed to start Instagram scraping');
+      setError('Failed to start Instagram scraping process');
     }
   };
 
