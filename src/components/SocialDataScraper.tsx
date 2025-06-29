@@ -21,6 +21,8 @@ import {
 } from '@mui/material';
 import { YouTube, Instagram } from '@mui/icons-material';
 import api, { Task } from '../services/api';
+import { useAuth } from '../contexts/authContext';
+import { getMyCreatorProfile } from '../firebase/firestore';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -48,8 +50,30 @@ function TabPanel(props: TabPanelProps) {
   );
 }
 
+// Utility function to extract Instagram username from URL
+const extractInstagramUsername = (input: string): string => {
+  if (!input) return '';
+  
+  // If it's already just a username (no URL), return as is (remove @ if present)
+  if (!input.includes('/') && !input.includes('.')) {
+    return input.replace('@', '');
+  }
+  
+  // Handle Instagram URLs
+  const instagramRegex = /(?:https?:\/\/)?(?:www\.)?instagram\.com\/([a-zA-Z0-9._]+)/;
+  const match = input.match(instagramRegex);
+  
+  if (match && match[1]) {
+    return match[1];
+  }
+  
+  // If no match found, assume it's a username and clean it
+  return input.replace('@', '').replace(/[^a-zA-Z0-9._]/g, '');
+};
+
 const SocialDataScraper: React.FC = () => {
   const theme = useTheme();
+  const { user } = useAuth();
   const [tabValue, setTabValue] = useState(0);
   const [youtubeUrl, setYoutubeUrl] = useState('');
   const [instagramUsername, setInstagramUsername] = useState('');
@@ -58,6 +82,8 @@ const SocialDataScraper: React.FC = () => {
   const [success, setSuccess] = useState<string | null>(null);
   const [currentTask, setCurrentTask] = useState<Task | null>(null);
   const [polling, setPolling] = useState<NodeJS.Timeout | null>(null);
+  const [profileData, setProfileData] = useState<any>(null);
+  const [loadingProfile, setLoadingProfile] = useState(false);
 
   // Clean up polling on unmount
   useEffect(() => {
@@ -67,6 +93,45 @@ const SocialDataScraper: React.FC = () => {
       }
     };
   }, [polling]);
+
+  // Fetch profile data on component mount
+  useEffect(() => {
+    if (user) {
+      fetchProfileData();
+    }
+  }, [user]);
+
+  // Auto-populate fields when profile data is loaded
+  useEffect(() => {
+    if (profileData) {
+      // Auto-populate Instagram username
+      if (profileData.socials?.instagram) {
+        const username = extractInstagramUsername(profileData.socials.instagram);
+        setInstagramUsername(username);
+      }
+      
+      // Auto-populate YouTube URL
+      if (profileData.socials?.youtube) {
+        setYoutubeUrl(profileData.socials.youtube);
+      }
+    }
+  }, [profileData]);
+
+  // Fetch profile data
+  const fetchProfileData = async () => {
+    if (!user) return;
+    
+    setLoadingProfile(true);
+    try {
+      const profile = await getMyCreatorProfile(user.uid);
+      setProfileData(profile);
+    } catch (error) {
+      console.error('Error fetching profile data:', error);
+      setError('Failed to fetch profile data. Please ensure your social media URLs are saved in your profile.');
+    } finally {
+      setLoadingProfile(false);
+    }
+  };
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
@@ -130,13 +195,20 @@ const SocialDataScraper: React.FC = () => {
     e.preventDefault();
     if (!instagramUsername) return;
 
+    // Extract username from URL if needed
+    const cleanUsername = extractInstagramUsername(instagramUsername);
+    if (!cleanUsername) {
+      setError('Please enter a valid Instagram username or URL');
+      return;
+    }
+
     setLoading(true);
     setError(null);
     setSuccess(null);
     setCurrentTask(null);
 
     try {
-      const task = await api.scrapeInstagram(instagramUsername);
+      const task = await api.scrapeInstagram(cleanUsername);
       setCurrentTask(task);
       startPolling(task.task_id);
     } catch (err) {
@@ -152,90 +224,125 @@ const SocialDataScraper: React.FC = () => {
           Social Media Data Scraper
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-          Enter a URL or username to scrape data from social media platforms
+          Scrape data from your social media platforms using URLs from your profile
+          {loadingProfile && (
+            <Box component="span" sx={{ display: 'block', mt: 1, fontStyle: 'italic' }}>
+              Loading your social media URLs...
+            </Box>
+          )}
+          {!loadingProfile && !profileData && user && (
+            <Box component="span" sx={{ display: 'block', mt: 1, fontStyle: 'italic', color: 'warning.main' }}>
+              Please add your social media URLs in your profile settings
+            </Box>
+          )}
         </Typography>
 
-        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-          <Tabs 
-            value={tabValue} 
-            onChange={handleTabChange} 
-            aria-label="social media tabs"
-            variant="fullWidth"
-          >
-            <Tab 
-              label="YouTube" 
-              icon={<YouTube />} 
-              iconPosition="start"
-              sx={{ 
-                minHeight: 60,
-                textTransform: 'none',
-                fontSize: '0.9rem',
-                fontWeight: 500
-              }}
-            />
-            <Tab 
-              label="Instagram" 
-              icon={<Instagram />} 
-              iconPosition="start"
-              sx={{ 
-                minHeight: 60,
-                textTransform: 'none',
-                fontSize: '0.9rem',
-                fontWeight: 500
-              }}
-            />
-          </Tabs>
-        </Box>
+        {!user ? (
+          <Alert severity="warning" sx={{ mb: 3 }}>
+            Please log in to access your social media URLs
+          </Alert>
+        ) : loadingProfile ? (
+          <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
+            <CircularProgress />
+          </Box>
+        ) : (
+          <>
+            <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+              <Tabs 
+                value={tabValue} 
+                onChange={handleTabChange} 
+                aria-label="social media tabs"
+                variant="fullWidth"
+              >
+                <Tab 
+                  label="YouTube" 
+                  icon={<YouTube />} 
+                  iconPosition="start"
+                  disabled={!youtubeUrl}
+                  sx={{ 
+                    minHeight: 60,
+                    textTransform: 'none',
+                    fontSize: '0.9rem',
+                    fontWeight: 500
+                  }}
+                />
+                <Tab 
+                  label="Instagram" 
+                  icon={<Instagram />} 
+                  iconPosition="start"
+                  disabled={!instagramUsername}
+                  sx={{ 
+                    minHeight: 60,
+                    textTransform: 'none',
+                    fontSize: '0.9rem',
+                    fontWeight: 500
+                  }}
+                />
+              </Tabs>
+            </Box>
 
-        <TabPanel value={tabValue} index={0}>
-          <form onSubmit={handleYoutubeSubmit}>
-            <TextField
-              fullWidth
-              label="YouTube Channel URL or Search Query"
-              variant="outlined"
-              placeholder="https://www.youtube.com/c/channelname or search term"
-              value={youtubeUrl}
-              onChange={(e) => setYoutubeUrl(e.target.value)}
-              disabled={loading}
-              sx={{ mb: 2 }}
-            />
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              color="primary"
-              disabled={loading || !youtubeUrl}
-              sx={{ height: 48 }}
-            >
-              {loading ? <CircularProgress size={24} /> : 'Scrape YouTube Data'}
-            </Button>
-          </form>
-        </TabPanel>
+            {/* Rest of the component content */}
+            <TabPanel value={tabValue} index={0}>
+              <Box sx={{ mb: 2 }}>
+                <Typography variant="body2" color="text.secondary">
+                  YouTube Channel URL from your profile
+                </Typography>
+              </Box>
+              <form onSubmit={handleYoutubeSubmit}>
+                <TextField
+                  fullWidth
+                  label="YouTube Channel URL"
+                  variant="outlined"
+                  placeholder="YouTube URL will be loaded from your profile"
+                  value={youtubeUrl}
+                  disabled={true}
+                  sx={{ mb: 2 }}
+                  helperText={youtubeUrl ? "URL loaded from your profile" : "Please add your YouTube URL in your profile settings"}
+                />
+                <Button
+                  type="submit"
+                  fullWidth
+                  variant="contained"
+                  color="primary"
+                  disabled={loading || !youtubeUrl}
+                  sx={{ height: 48 }}
+                >
+                  {loading ? <CircularProgress size={24} /> : 'Scrape YouTube Data'}
+                </Button>
+              </form>
+            </TabPanel>
 
-        <TabPanel value={tabValue} index={1}>
-          <form onSubmit={handleInstagramSubmit}>
-            <TextField
-              fullWidth
-              label="Instagram Username"
-              variant="outlined"
-              placeholder="username (without @)"
-              value={instagramUsername}
-              onChange={(e) => setInstagramUsername(e.target.value)}
-              disabled={loading}
-              sx={{ mb: 2 }}
-            />
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              color="primary"
-              disabled={loading || !instagramUsername}
-              sx={{ height: 48 }}
-            >
-              {loading ? <CircularProgress size={24} /> : 'Scrape Instagram Data'}
-            </Button>
-          </form>
-        </TabPanel>
+            <TabPanel value={tabValue} index={1}>
+              <Box sx={{ mb: 2 }}>
+                <Typography variant="body2" color="text.secondary">
+                  Instagram Username extracted from your profile
+                </Typography>
+              </Box>
+              <form onSubmit={handleInstagramSubmit}>
+                <TextField
+                  fullWidth
+                  label="Instagram Username"
+                  variant="outlined"
+                  placeholder="Instagram username will be extracted from your profile URL"
+                  value={instagramUsername}
+                  disabled={true}
+                  sx={{ mb: 2 }}
+                  helperText={instagramUsername ? "Username extracted from your profile URL" : "Please add your Instagram URL in your profile settings"}
+                />
+                <Button
+                  type="submit"
+                  fullWidth
+                  variant="contained"
+                  color="primary"
+                  disabled={loading || !instagramUsername}
+                  sx={{ height: 48 }}
+                >
+                  {loading ? <CircularProgress size={24} /> : 'Scrape Instagram Data'}
+                </Button>
+              </form>
+            </TabPanel>
+          </>
+        )}
 
         {currentTask && (
           <Box sx={{ mt: 3 }}>
