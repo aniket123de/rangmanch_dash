@@ -97,7 +97,6 @@ const navigationItems = [
   { text: 'Analytics', icon: <AnalyticsIcon />, id: 'analytics', path: '/analytics' },
   { text: 'Audience Insights', icon: <AudienceIcon />, id: 'audience-insights', path: '/audience-insights' },
   { text: 'Notifications', icon: <NotificationsIcon />, id: 'notifications', path: '/notifications' },
-  { text: 'Sentiment Analysis', icon: <InsertEmoticonIcon />, id: 'sentiment-analysis', path: '/sentiment-analysis' },
 ];
 
 // User related items

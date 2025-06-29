@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { User } from 'firebase/auth';
 import { auth } from '../firebase/firebase';
 import { fetchNotifications, markNotificationAsRead, updateNotificationStatus } from '../firebase/notifications';
 
@@ -85,7 +86,7 @@ export const NotificationsProvider: React.FC<NotificationsProviderProps> = ({ ch
   };
 
   useEffect(() => {
-    const unsubscribeAuth = auth.onAuthStateChanged((user) => {
+    const unsubscribeAuth = auth.onAuthStateChanged((user: User | null) => {
       if (user) {
         setupNotificationsListener(user.uid);
       } else {

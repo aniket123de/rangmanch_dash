@@ -19,7 +19,6 @@ import Loader from './components/Loader';
 import { ThemeProvider as CustomThemeProvider } from './context/ThemeContext';
 import { AuthProvider, useAuth } from './contexts/authContext';
 import { NotificationsProvider } from './contexts/NotificationsContext';
-import SentimentAnalysis from './pages/SentimentAnalysis';
 
 const AppRoutes: React.FC = () => {
   const { userLoggedIn, loading } = useAuth();
@@ -114,10 +113,10 @@ const AppRoutes: React.FC = () => {
         )}
       </Route>
       
-      <Route path="/sentiment-analysis">
+      <Route path="/" exact>
         {userLoggedIn ? (
           <DashboardLayout>
-            <SentimentAnalysis />
+            <Dashboard />
           </DashboardLayout>
         ) : (
           <Redirect to="/login" />
