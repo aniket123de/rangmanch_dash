@@ -26,7 +26,6 @@ import {
   Notifications as NotificationsIcon,
   InsertEmoticon as InsertEmoticonIcon,
   Lightbulb as LightbulbIcon,
-  Create as CreateIcon,
 } from '@mui/icons-material';
 import { useHistory } from 'react-router-dom';
 import { useAuth } from '../contexts/authContext';
@@ -98,7 +97,6 @@ const navigationItems = [
   { text: 'Content Library', icon: <ContentLibraryIcon />, id: 'content-library', path: '/content-library' },
   { text: 'Analytics', icon: <AnalyticsIcon />, id: 'analytics', path: '/analytics' },
   { text: 'Audience Insights', icon: <AudienceIcon />, id: 'audience-insights', path: '/audience-insights' },
-  { text: 'Creator Hub', icon: <CreateIcon />, id: 'creator-hub', path: '/creator-hub' },
   { text: 'Content Suggestion', icon: <LightbulbIcon />, id: 'content-suggestion', path: 'https://rangmanch.vercel.app/content-suggestion' },
   { text: 'Sentiment Analysis', icon: <InsertEmoticonIcon />, id: 'sentiment-analysis', path: 'https://rangmanch.vercel.app/sentiment-analysis' },
   { text: 'Notifications', icon: <NotificationsIcon />, id: 'notifications', path: '/notifications' },
