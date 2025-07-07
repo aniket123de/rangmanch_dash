@@ -47,7 +47,7 @@ const CreatorHub: React.FC = () => {
 
   // Creator Hub URL - supports both local development and production
   const creatorHubUrl = process.env.NODE_ENV === 'production' 
-    ? 'https://your-creator-hub-app.vercel.app/dashboard' // Replace with your actual Vercel URL
+    ? 'https://rangamanch-creatorhub.vercel.app/dashboard' // Replace with your actual Vercel URL
     : 'http://localhost:3001/dashboard';
 
   useEffect(() => {
