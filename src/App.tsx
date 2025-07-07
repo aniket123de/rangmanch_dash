@@ -15,6 +15,7 @@ import Notifications from './pages/Notifications';
 import SignUp from './pages/SignUp';
 import Settings from './pages/Settings';
 import SocialDataScraper from './components/SocialDataScraper';
+import CreatorHub from './components/CreatorHub';
 import Loader from './components/Loader';
 import { ThemeProvider as CustomThemeProvider } from './context/ThemeContext';
 import { AuthProvider, useAuth } from './contexts/authContext';
@@ -67,6 +68,16 @@ const AppRoutes: React.FC = () => {
         {userLoggedIn ? (
           <DashboardLayout>
             <AudienceInsights />
+          </DashboardLayout>
+        ) : (
+          <Redirect to="/login" />
+        )}
+      </Route>
+      
+      <Route path="/creator-hub">
+        {userLoggedIn ? (
+          <DashboardLayout>
+            <CreatorHub />
           </DashboardLayout>
         ) : (
           <Redirect to="/login" />
