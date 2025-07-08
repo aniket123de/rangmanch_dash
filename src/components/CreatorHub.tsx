@@ -207,12 +207,6 @@ const CreatorHub: React.FC = () => {
                     npm run dev
                   </Box>
                 </li>
-                
-                <li>
-                  <Typography variant="body2" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
-                    <strong>The Creator Hub dashboard will be available at:</strong> http://localhost:3001/dashboard
-                  </Typography>
-                </li>
               </Box>
               
               <Typography 
@@ -338,7 +332,6 @@ const CreatorHub: React.FC = () => {
               px: 2
             }}
           >
-            Make sure Creator Hub is running on port 3001
           </Typography>
         </LoadingContainer>
       )}
