@@ -44,17 +44,97 @@ const HeaderContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
-  padding: theme.spacing(2),
-  borderBottom: `1px solid ${theme.palette.divider}`,
+  padding: theme.spacing(3, 4),
+  borderBottom: `2px solid ${theme.palette.divider}`,
   backgroundColor: theme.palette.background.paper,
+  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+  position: 'relative',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '4px',
+    background: `linear-gradient(90deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
+  },
   [theme.breakpoints.down('sm')]: {
-    padding: theme.spacing(1.5),
+    padding: theme.spacing(2, 3),
     flexDirection: 'column',
-    gap: theme.spacing(1),
+    gap: theme.spacing(2),
     alignItems: 'flex-start',
   },
   [theme.breakpoints.down('xs')]: {
-    padding: theme.spacing(1),
+    padding: theme.spacing(1.5, 2),
+  },
+}));
+
+const TitleSection = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(2),
+  '& .title-icon': {
+    fontSize: '2rem',
+    color: theme.palette.primary.main,
+    background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+    WebkitBackgroundClip: 'text',
+    WebkitTextFillColor: 'transparent',
+    backgroundClip: 'text',
+    [theme.breakpoints.down('sm')]: {
+      fontSize: '1.75rem',
+    },
+  },
+  '& .title-text': {
+    fontWeight: 700,
+    background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+    WebkitBackgroundClip: 'text',
+    WebkitTextFillColor: 'transparent',
+    backgroundClip: 'text',
+    letterSpacing: '-0.02em',
+  },
+  '& .subtitle': {
+    color: theme.palette.text.secondary,
+    fontSize: '0.875rem',
+    fontWeight: 400,
+    marginLeft: theme.spacing(1),
+    [theme.breakpoints.down('sm')]: {
+      display: 'none',
+    },
+  },
+}));
+
+const ActionButtonsContainer = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  gap: theme.spacing(1.5),
+  alignItems: 'center',
+  [theme.breakpoints.down('sm')]: {
+    width: '100%',
+    justifyContent: 'flex-end',
+  },
+  '& .MuiButton-root': {
+    borderRadius: theme.spacing(1),
+    textTransform: 'none',
+    fontWeight: 600,
+    transition: 'all 0.2s ease-in-out',
+    '&:hover': {
+      transform: 'translateY(-1px)',
+      boxShadow: theme.shadows[4],
+    },
+  },
+  '& .refresh-btn': {
+    background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
+    color: 'white',
+    '&:hover': {
+      background: `linear-gradient(45deg, ${theme.palette.primary.dark}, ${theme.palette.primary.main})`,
+    },
+  },
+  '& .external-btn': {
+    borderColor: theme.palette.primary.main,
+    color: theme.palette.primary.main,
+    '&:hover': {
+      backgroundColor: theme.palette.primary.main,
+      color: 'white',
+    },
   },
 }));
 
@@ -109,32 +189,38 @@ const CreatorHub: React.FC = () => {
     return (
       <Box sx={{ p: { xs: 1, sm: 2, md: 3 } }}>
         <HeaderContainer>
-          <Typography 
-            variant="h5" 
-            component="h1" 
-            sx={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: 1,
-              fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1.875rem' }
-            }}
-          >
-            <CodeIcon />
-            Creator Hub
-          </Typography>
-          <Button
-            variant="outlined"
-            startIcon={<LaunchIcon />}
-            onClick={handleOpenExternal}
-            sx={{ 
-              ml: { xs: 0, sm: 2 },
-              mt: { xs: 1, sm: 0 },
-              fontSize: { xs: '0.75rem', sm: '0.875rem' },
-              padding: { xs: '6px 12px', sm: '8px 16px' }
-            }}
-          >
-            Open in New Tab
-          </Button>
+          <TitleSection>
+            <CodeIcon className="title-icon" />
+            <Box>
+              <Typography 
+                variant="h4" 
+                component="h1" 
+                className="title-text"
+                sx={{ 
+                  fontSize: { xs: '1.5rem', sm: '2rem', md: '2.25rem' }
+                }}
+              >
+                Creator Hub
+              </Typography>
+              <Typography className="subtitle">
+                Content creation and management platform
+              </Typography>
+            </Box>
+          </TitleSection>
+          <ActionButtonsContainer>
+            <Button
+              variant="outlined"
+              startIcon={<LaunchIcon />}
+              onClick={handleOpenExternal}
+              className="external-btn"
+              sx={{ 
+                fontSize: { xs: '0.875rem', sm: '1rem' },
+                padding: { xs: '8px 16px', sm: '10px 20px' }
+              }}
+            >
+              Open in New Tab
+            </Button>
+          </ActionButtonsContainer>
         </HeaderContainer>
         
         <LoadingContainer>
@@ -261,34 +347,34 @@ const CreatorHub: React.FC = () => {
   return (
     <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
       <HeaderContainer>
-        <Typography 
-          variant="h5" 
-          component="h1" 
-          sx={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: 1,
-            fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1.875rem' }
-          }}
-        >
-          <CodeIcon />
-          Creator Hub
-        </Typography>
-        <Box sx={{ 
-          display: 'flex', 
-          gap: 1,
-          flexDirection: { xs: 'row', sm: 'row' },
-          width: { xs: '100%', sm: 'auto' },
-          justifyContent: { xs: 'flex-end', sm: 'flex-start' }
-        }}>
+        <TitleSection>
+          <CodeIcon className="title-icon" />
+          <Box>
+            <Typography 
+              variant="h4" 
+              component="h1" 
+              className="title-text"
+              sx={{ 
+                fontSize: { xs: '1.5rem', sm: '2rem', md: '2.25rem' }
+              }}
+            >
+              Creator Hub
+            </Typography>
+            <Typography className="subtitle">
+              Content creation and management platform
+            </Typography>
+          </Box>
+        </TitleSection>
+        <ActionButtonsContainer>
           <Button
-            variant="outlined"
+            variant="contained"
             size="small"
             startIcon={<RefreshIcon sx={{ display: { xs: 'none', sm: 'inline' } }} />}
             onClick={handleRefresh}
+            className="refresh-btn"
             sx={{ 
-              fontSize: { xs: '0.75rem', sm: '0.875rem' },
-              px: { xs: 1, sm: 2 }
+              fontSize: { xs: '0.875rem', sm: '1rem' },
+              px: { xs: 2, sm: 3 }
             }}
           >
             <Box sx={{ display: { xs: 'none', sm: 'inline' } }}>Refresh</Box>
@@ -299,15 +385,16 @@ const CreatorHub: React.FC = () => {
             size="small"
             startIcon={<LaunchIcon sx={{ display: { xs: 'none', sm: 'inline' } }} />}
             onClick={handleOpenExternal}
+            className="external-btn"
             sx={{ 
-              fontSize: { xs: '0.75rem', sm: '0.875rem' },
-              px: { xs: 1, sm: 2 }
+              fontSize: { xs: '0.875rem', sm: '1rem' },
+              px: { xs: 2, sm: 3 }
             }}
           >
             <Box sx={{ display: { xs: 'none', sm: 'inline' } }}>Open in New Tab</Box>
             <Box sx={{ display: { xs: 'inline', sm: 'none' } }}>↗</Box>
           </Button>
-        </Box>
+        </ActionButtonsContainer>
       </HeaderContainer>
       
       {isLoading && (

@@ -26,6 +26,7 @@ import {
   Notifications as NotificationsIcon,
   InsertEmoticon as InsertEmoticonIcon,
   Lightbulb as LightbulbIcon,
+  Code as CodeIcon,
 } from '@mui/icons-material';
 import { useHistory } from 'react-router-dom';
 import { useAuth } from '../contexts/authContext';

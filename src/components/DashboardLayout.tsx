@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Container, Toolbar, useMediaQuery, useTheme } from '@mui/material';
+import { useLocation } from 'react-router-dom';
 import Header from './Header';
 import Sidebar from './Sidebar';
 
@@ -9,11 +10,38 @@ interface DashboardLayoutProps {
 
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const theme = useTheme();
+  const location = useLocation();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const isSmallMobile = useMediaQuery('(max-width:380px)');
 
   const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
-  const [currentSection, setCurrentSection] = useState('dashboard');
+  const [currentSection, setCurrentSection] = useState('');
+
+  // Function to determine section from pathname
+  const getSectionFromPath = (pathname: string): string => {
+    switch (pathname) {
+      case '/':
+        return 'dashboard';
+      case '/content-library':
+        return 'content-library';
+      case '/analytics':
+        return 'analytics';
+      case '/audience-insights':
+        return 'audience-insights';
+      case '/notifications':
+        return 'notifications';
+      case '/profile':
+        return 'profile';
+      case '/creator-hub':
+        return 'creator-hub'; // No sidebar selection for creator-hub
+      case '/scrape':
+        return 'scrape';
+      case '/settings':
+        return 'settings';
+      default:
+        return '';
+    }
+  };
 
   const handleSidebarToggle = () => {
     setSidebarOpen(!sidebarOpen);
@@ -26,6 +54,12 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   useEffect(() => {
     setSidebarOpen(!isMobile);
   }, [isMobile]);
+
+  // Update current section based on location
+  useEffect(() => {
+    const section = getSectionFromPath(location.pathname);
+    setCurrentSection(section);
+  }, [location.pathname]);
 
   return (
     <Box sx={{ 
