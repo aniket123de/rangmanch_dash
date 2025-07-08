@@ -11,6 +11,10 @@ const IframeContainer = styled(Box)(({ theme }) => ({
   borderRadius: theme.spacing(1),
   backgroundColor: theme.palette.background.paper,
   border: `1px solid ${theme.palette.divider}`,
+  [theme.breakpoints.down('sm')]: {
+    height: 'calc(100vh - 140px)',
+    borderRadius: theme.spacing(0.5),
+  },
 }));
 
 const StyledIframe = styled('iframe')(({ theme }) => ({
@@ -28,6 +32,12 @@ const LoadingContainer = styled(Box)(({ theme }) => ({
   height: '60vh',
   gap: theme.spacing(2),
   backgroundColor: theme.palette.background.paper,
+  padding: theme.spacing(2),
+  [theme.breakpoints.down('sm')]: {
+    height: '50vh',
+    padding: theme.spacing(1),
+    gap: theme.spacing(1.5),
+  },
 }));
 
 const HeaderContainer = styled(Box)(({ theme }) => ({
@@ -37,6 +47,15 @@ const HeaderContainer = styled(Box)(({ theme }) => ({
   padding: theme.spacing(2),
   borderBottom: `1px solid ${theme.palette.divider}`,
   backgroundColor: theme.palette.background.paper,
+  [theme.breakpoints.down('sm')]: {
+    padding: theme.spacing(1.5),
+    flexDirection: 'column',
+    gap: theme.spacing(1),
+    alignItems: 'flex-start',
+  },
+  [theme.breakpoints.down('xs')]: {
+    padding: theme.spacing(1),
+  },
 }));
 
 const CreatorHub: React.FC = () => {
@@ -88,9 +107,18 @@ const CreatorHub: React.FC = () => {
 
   if (error || showSetupInstructions) {
     return (
-      <Box sx={{ p: 3 }}>
+      <Box sx={{ p: { xs: 1, sm: 2, md: 3 } }}>
         <HeaderContainer>
-          <Typography variant="h5" component="h1" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Typography 
+            variant="h5" 
+            component="h1" 
+            sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: 1,
+              fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1.875rem' }
+            }}
+          >
             <CodeIcon />
             Creator Hub
           </Typography>
@@ -98,7 +126,12 @@ const CreatorHub: React.FC = () => {
             variant="outlined"
             startIcon={<LaunchIcon />}
             onClick={handleOpenExternal}
-            sx={{ ml: 2 }}
+            sx={{ 
+              ml: { xs: 0, sm: 2 },
+              mt: { xs: 1, sm: 0 },
+              fontSize: { xs: '0.75rem', sm: '0.875rem' },
+              padding: { xs: '6px 12px', sm: '8px 16px' }
+            }}
           >
             Open in New Tab
           </Button>
@@ -106,24 +139,24 @@ const CreatorHub: React.FC = () => {
         
         <LoadingContainer>
           {error && (
-            <Alert severity="error" sx={{ maxWidth: 600, mb: 2 }}>
+            <Alert severity="error" sx={{ maxWidth: 600, mb: 2, width: '100%' }}>
               {error}
             </Alert>
           )}
           
-          <Card sx={{ maxWidth: 800, width: '100%' }}>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
+          <Card sx={{ maxWidth: 800, width: '100%', mx: { xs: 1, sm: 2 } }}>
+            <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
+              <Typography variant="h6" gutterBottom sx={{ fontSize: { xs: '1.125rem', sm: '1.25rem' } }}>
                 🚀 Creator Hub Setup Instructions
               </Typography>
               
-              <Typography variant="body1" paragraph>
+              <Typography variant="body1" paragraph sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
                 To run Creator Hub locally and integrate it with your dashboard:
               </Typography>
               
               <Box component="ol" sx={{ pl: 2, '& li': { mb: 1 } }}>
                 <li>
-                  <Typography variant="body2">
+                  <Typography variant="body2" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
                     <strong>Open PowerShell/Command Prompt</strong> and navigate to the Creator Hub folder:
                   </Typography>
                   <Box sx={{ 
@@ -132,14 +165,17 @@ const CreatorHub: React.FC = () => {
                     borderRadius: 1, 
                     fontFamily: 'monospace',
                     mt: 1,
-                    mb: 1
+                    mb: 1,
+                    fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                    overflow: 'auto',
+                    wordBreak: 'break-all'
                   }}>
                     cd "d:\Programming\Rangmanch-Dashboard\Creator Hub"
                   </Box>
                 </li>
                 
                 <li>
-                  <Typography variant="body2">
+                  <Typography variant="body2" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
                     <strong>Install dependencies:</strong>
                   </Typography>
                   <Box sx={{ 
@@ -148,14 +184,15 @@ const CreatorHub: React.FC = () => {
                     borderRadius: 1, 
                     fontFamily: 'monospace',
                     mt: 1,
-                    mb: 1
+                    mb: 1,
+                    fontSize: { xs: '0.75rem', sm: '0.875rem' }
                   }}>
                     npm install
                   </Box>
                 </li>
                 
                 <li>
-                  <Typography variant="body2">
+                  <Typography variant="body2" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
                     <strong>Start the development server:</strong>
                   </Typography>
                   <Box sx={{ 
@@ -164,30 +201,49 @@ const CreatorHub: React.FC = () => {
                     borderRadius: 1, 
                     fontFamily: 'monospace',
                     mt: 1,
-                    mb: 1
+                    mb: 1,
+                    fontSize: { xs: '0.75rem', sm: '0.875rem' }
                   }}>
                     npm run dev
                   </Box>
                 </li>
                 
                 <li>
-                  <Typography variant="body2">
+                  <Typography variant="body2" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
                     <strong>The Creator Hub dashboard will be available at:</strong> http://localhost:3001/dashboard
                   </Typography>
                 </li>
               </Box>
               
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+              <Typography 
+                variant="body2" 
+                color="text.secondary" 
+                sx={{ 
+                  mt: 2,
+                  fontSize: { xs: '0.75rem', sm: '0.875rem' }
+                }}
+              >
                 Once the server is running, click the "Retry" button below to load it in this dashboard.
               </Typography>
             </CardContent>
           </Card>
           
-          <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
+          <Box sx={{ 
+            display: 'flex', 
+            gap: 2, 
+            mt: 2,
+            flexDirection: { xs: 'column', sm: 'row' },
+            width: { xs: '100%', sm: 'auto' },
+            px: { xs: 2, sm: 0 }
+          }}>
             <Button
               variant="contained"
               startIcon={<RefreshIcon />}
               onClick={handleRefresh}
+              sx={{ 
+                fontSize: { xs: '0.875rem', sm: '1rem' },
+                py: { xs: 1.5, sm: 1 }
+              }}
             >
               Retry
             </Button>
@@ -195,6 +251,10 @@ const CreatorHub: React.FC = () => {
               variant="outlined"
               startIcon={<LaunchIcon />}
               onClick={handleOpenExternal}
+              sx={{ 
+                fontSize: { xs: '0.875rem', sm: '1rem' },
+                py: { xs: 1.5, sm: 1 }
+              }}
             >
               Open in New Tab
             </Button>
@@ -207,37 +267,77 @@ const CreatorHub: React.FC = () => {
   return (
     <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
       <HeaderContainer>
-        <Typography variant="h5" component="h1" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Typography 
+          variant="h5" 
+          component="h1" 
+          sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: 1,
+            fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1.875rem' }
+          }}
+        >
           <CodeIcon />
           Creator Hub
         </Typography>
-        <Box sx={{ display: 'flex', gap: 1 }}>
+        <Box sx={{ 
+          display: 'flex', 
+          gap: 1,
+          flexDirection: { xs: 'row', sm: 'row' },
+          width: { xs: '100%', sm: 'auto' },
+          justifyContent: { xs: 'flex-end', sm: 'flex-start' }
+        }}>
           <Button
             variant="outlined"
             size="small"
-            startIcon={<RefreshIcon />}
+            startIcon={<RefreshIcon sx={{ display: { xs: 'none', sm: 'inline' } }} />}
             onClick={handleRefresh}
+            sx={{ 
+              fontSize: { xs: '0.75rem', sm: '0.875rem' },
+              px: { xs: 1, sm: 2 }
+            }}
           >
-            Refresh
+            <Box sx={{ display: { xs: 'none', sm: 'inline' } }}>Refresh</Box>
+            <Box sx={{ display: { xs: 'inline', sm: 'none' } }}>↻</Box>
           </Button>
           <Button
             variant="outlined"
             size="small"
-            startIcon={<LaunchIcon />}
+            startIcon={<LaunchIcon sx={{ display: { xs: 'none', sm: 'inline' } }} />}
             onClick={handleOpenExternal}
+            sx={{ 
+              fontSize: { xs: '0.75rem', sm: '0.875rem' },
+              px: { xs: 1, sm: 2 }
+            }}
           >
-            Open in New Tab
+            <Box sx={{ display: { xs: 'none', sm: 'inline' } }}>Open in New Tab</Box>
+            <Box sx={{ display: { xs: 'inline', sm: 'none' } }}>↗</Box>
           </Button>
         </Box>
       </HeaderContainer>
       
       {isLoading && (
         <LoadingContainer>
-          <CircularProgress size={60} />
-          <Typography variant="h6" color="text.secondary">
+          <CircularProgress size={60} sx={{ width: { xs: 40, sm: 60 }, height: { xs: 40, sm: 60 } }} />
+          <Typography 
+            variant="h6" 
+            color="text.secondary"
+            sx={{ 
+              fontSize: { xs: '1rem', sm: '1.25rem' },
+              textAlign: 'center'
+            }}
+          >
             Loading Creator Hub...
           </Typography>
-          <Typography variant="body2" color="text.secondary">
+          <Typography 
+            variant="body2" 
+            color="text.secondary"
+            sx={{ 
+              fontSize: { xs: '0.75rem', sm: '0.875rem' },
+              textAlign: 'center',
+              px: 2
+            }}
+          >
             Make sure Creator Hub is running on port 3001
           </Typography>
         </LoadingContainer>

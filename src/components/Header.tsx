@@ -48,6 +48,22 @@ const StyledWrapper = styled.div`
     background-clip: content-box, border-box;
   }
 
+  @media (max-width: 768px) {
+    .btn {
+      width: 9rem;
+      height: 2.5rem;
+      font-size: 0.75rem;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .btn {
+      width: 7rem;
+      height: 2.2rem;
+      font-size: 0.7rem;
+    }
+  }
+
   #container-stars {
     position: absolute;
     z-index: -1;
@@ -68,10 +84,54 @@ const StyledWrapper = styled.div`
     text-shadow: 0 0 4px white;
   }
 
+  @media (max-width: 768px) {
+    strong {
+      font-size: 12px;
+      letter-spacing: 3px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    strong {
+      font-size: 10px;
+      letter-spacing: 2px;
+    }
+  }
+
+  .desktop-text {
+    display: inline;
+  }
+
+  .mobile-text {
+    display: none;
+  }
+
+  @media (max-width: 768px) {
+    .desktop-text {
+      display: none;
+    }
+    
+    .mobile-text {
+      display: inline;
+    }
+  }
+
   #glow {
     position: absolute;
     display: flex;
     width: 12rem;
+  }
+
+  @media (max-width: 768px) {
+    #glow {
+      width: 9rem;
+    }
+  }
+
+  @media (max-width: 480px) {
+    #glow {
+      width: 7rem;
+    }
   }
 
   .circle {
@@ -381,7 +441,8 @@ const Header: React.FC<HeaderProps> = ({ onSidebarToggle }) => {
         {/* Right side - Creator Hub button */}
         <StyledWrapper>
           <button type="button" className="btn" onClick={handleCreatorHubClick}>
-            <strong>CREATOR HUB</strong>
+            <strong className="desktop-text">CREATOR HUB</strong>
+            <strong className="mobile-text">CREATE</strong>
             <div id="container-stars">
               <div id="stars" />
             </div>
