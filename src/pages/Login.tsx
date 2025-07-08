@@ -152,6 +152,8 @@ const Login: React.FC = () => {
 };
 
 const StyledWrapper = styled.div<StyledWrapperProps>`
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  
   #form-ui {
     display: flex;
     align-items: center;
@@ -163,7 +165,8 @@ const StyledWrapper = styled.div<StyledWrapperProps>`
 
   #form {
     position: relative;
-    width: 320px;
+    width: 100%;
+    max-width: 400px;
     height: auto;
     padding: 35px;
     background-color: ${props => props.$isDark ? '#161616' : '#ffffff'};
@@ -171,6 +174,17 @@ const StyledWrapper = styled.div<StyledWrapperProps>`
     outline: 1px solid ${props => props.$isDark ? '#c77dff' : '#9d4edd'};
     border-radius: 10px;
     transition: all 0.3s ease;
+  }
+
+  @media (max-width: 480px) {
+    #form-ui {
+      padding: 15px;
+      margin-top: 40px;
+    }
+    
+    #form {
+      padding: 25px;
+    }
   }
 
   #form-body {
@@ -181,10 +195,11 @@ const StyledWrapper = styled.div<StyledWrapperProps>`
 
   #welcome-lines {
     text-align: center;
-    line-height: 1;
+    line-height: 1.2;
     margin-bottom: 40px;
-    padding-top: 10px;
-    padding-bottom: 10px;
+    padding-top: 5px;
+    padding-bottom: 15px;
+    overflow: visible;
   }
 
   #welcome-line-1 {
@@ -195,13 +210,35 @@ const StyledWrapper = styled.div<StyledWrapperProps>`
     font-weight: 600;
     font-size: 40px;
     letter-spacing: -1px;
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+    line-height: 1.4;
+    padding: 10px 0;
+    margin-bottom: 5px;
   }
 
   #welcome-line-2 {
     color: ${props => props.$isDark ? '#ffffff' : '#161616'};
     font-size: 18px;
-    margin-top: 17px;
+    margin-top: 25px;
     transition: color 0.3s ease;
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  }
+
+  @media (max-width: 480px) {
+    #welcome-lines {
+      margin-bottom: 30px;
+      padding-top: 5px;
+    }
+    
+    #welcome-line-1 {
+      font-size: 32px;
+      line-height: 1.4;
+      padding: 8px 0;
+    }
+    
+    #welcome-line-2 {
+      font-size: 16px;
+    }
   }
 
   #input-area {
@@ -216,14 +253,16 @@ const StyledWrapper = styled.div<StyledWrapperProps>`
 
   .form-inp input {
     width: 100%;
-    padding: 11px 25px;
+    padding: 12px 16px;
     background: transparent;
     border: 1px solid ${props => props.$isDark ? '#c77dff' : '#9d4edd'};
     border-radius: 8px;
-    font-size: 13.4px;
+    font-size: 14px;
     color: ${props => props.$isDark ? '#c77dff' : '#9d4edd'};
     font-weight: 400;
     transition: all 0.3s ease;
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+    box-sizing: border-box;
   }
 
   .form-inp input:focus {
@@ -239,7 +278,18 @@ const StyledWrapper = styled.div<StyledWrapperProps>`
 
   .form-inp input::placeholder {
     color: ${props => props.$isDark ? '#666' : '#999'};
-    font-size: 13.4px;
+    font-size: 14px;
+  }
+
+  @media (max-width: 480px) {
+    #input-area {
+      margin-top: 30px;
+    }
+    
+    .form-inp input {
+      padding: 10px 14px;
+      font-size: 13px;
+    }
   }
 
   #submit-button-cvr {
@@ -254,18 +304,33 @@ const StyledWrapper = styled.div<StyledWrapperProps>`
     font-weight: 600;
     font-size: 14px;
     margin: 0;
-    padding: 14px 13px;
+    padding: 14px 16px;
     border: 0;
     border-radius: 8px;
     line-height: 1;
     cursor: pointer;
     transition: all 0.3s ease;
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+    box-sizing: border-box;
   }
 
-  #submit-button:hover {
+  #submit-button:hover:not(:disabled) {
     background: linear-gradient(45deg, #ff9e00, #ddff00);
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(157, 78, 221, 0.3);
+  }
+
+  #submit-button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  @media (max-width: 480px) {
+    #submit-button {
+      padding: 12px 16px;
+      font-size: 13px;
+    }
   }
 
   #separator {
@@ -294,33 +359,51 @@ const StyledWrapper = styled.div<StyledWrapperProps>`
 
   #google-button {
     width: 100%;
-    padding: 12px;
-    background: white;
-    border: 1px solid #ddd;
+    padding: 12px 16px;
+    background: ${props => props.$isDark ? '#2a2a2a' : 'white'};
+    border: 1px solid ${props => props.$isDark ? '#444' : '#ddd'};
     border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 10px;
     font-size: 14px;
-    color: #333;
+    color: ${props => props.$isDark ? '#ffffff' : '#333'};
     cursor: pointer;
     transition: all 0.3s ease;
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+    box-sizing: border-box;
+    font-weight: 500;
   }
 
-  #google-button:hover {
-    background: #f5f5f5;
+  #google-button:hover:not(:disabled) {
+    background: ${props => props.$isDark ? '#3a3a3a' : '#f5f5f5'};
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    transform: translateY(-1px);
   }
 
   #google-button img {
     width: 18px;
     height: 18px;
+    flex-shrink: 0;
   }
 
   #google-button:disabled {
     opacity: 0.7;
     cursor: not-allowed;
+    transform: none;
+  }
+
+  @media (max-width: 480px) {
+    #google-button {
+      padding: 10px 16px;
+      font-size: 13px;
+    }
+    
+    #google-button img {
+      width: 16px;
+      height: 16px;
+    }
   }
 
   #forgot-pass {
@@ -334,6 +417,7 @@ const StyledWrapper = styled.div<StyledWrapperProps>`
     font-size: 12px;
     text-decoration: none;
     transition: color 0.3s ease;
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
   }
 
   #forgot-pass a:hover {
@@ -352,10 +436,37 @@ const StyledWrapper = styled.div<StyledWrapperProps>`
     text-decoration: none;
     font-weight: 500;
     transition: color 0.3s ease;
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
   }
 
   #sign-up-link a:hover {
     color: #ff9e00;
+  }
+
+  .error-message {
+    text-align: center;
+    color: #ef4444;
+    margin: 10px 0;
+    padding: 8px;
+    border-radius: 8px;
+    background-color: ${props => props.$isDark ? 'rgba(239, 68, 68, 0.1)' : 'rgba(239, 68, 68, 0.1)'};
+    font-size: 14px;
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  }
+
+  @media (max-width: 480px) {
+    #forgot-pass a {
+      font-size: 11px;
+    }
+    
+    #sign-up-link a {
+      font-size: 13px;
+    }
+    
+    .error-message {
+      font-size: 13px;
+      padding: 6px;
+    }
   }
 
   #bar {
@@ -388,20 +499,27 @@ const StyledWrapper = styled.div<StyledWrapperProps>`
     right: -38px;
   }
 
-  .error-message {
-    text-align: center;
-    color: #ef4444;
-    margin: 10px 0;
-    padding: 8px;
-    border-radius: 8px;
-    background-color: ${props => props.$isDark ? 'rgba(239, 68, 68, 0.1)' : 'rgba(239, 68, 68, 0.1)'};
-    font-size: 14px;
-  }
-
-  #submit-button:disabled,
-  #google-button:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
+  @media (max-width: 480px) {
+    #bar {
+      bottom: -60px;
+      width: 24px;
+      height: 6px;
+      margin-left: -29px;
+    }
+    
+    #bar:before,
+    #bar:after {
+      width: 6px;
+      height: 6px;
+    }
+    
+    #bar:before {
+      right: -18px;
+    }
+    
+    #bar:after {
+      right: -32px;
+    }
   }
 `;
 
