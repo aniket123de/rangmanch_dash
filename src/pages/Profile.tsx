@@ -25,6 +25,7 @@ import {
   LinkedIn as LinkedInIcon,
   YouTube as YouTubeIcon,
   AttachMoney as MoneyIcon,
+  CheckCircle,
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/authContext';
 import { createOrUpdateCreatorProfile, getMyCreatorProfile } from '../firebase/firestore';
@@ -35,6 +36,7 @@ const Profile: React.FC = () => {
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>('');
+  const [isVerified, setIsVerified] = useState(false);
   
   // Profile data state
   const [profileData, setProfileData] = useState({
@@ -64,6 +66,7 @@ const Profile: React.FC = () => {
           setLoading(true);
           // Try to get creator profile
           const creatorProfile = await getMyCreatorProfile(user.uid);
+          setIsVerified(!!(creatorProfile as any).isVerified);
           
           setProfileData({
             name: (creatorProfile as any)?.name || user.displayName || '',
@@ -177,8 +180,9 @@ const Profile: React.FC = () => {
 
   return (
     <Box>
-      <Typography variant="h4" component="h1" gutterBottom>
+      <Typography variant="h4" component="h1" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
         Profile
+        {isVerified && <CheckCircle sx={{ color: '#2196f3' }} titleAccess="Verified" />}
       </Typography>
       
       {saveSuccess && (

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -39,8 +39,10 @@ import {
   TrendingUp as IndustryIcon,
   Refresh as RefreshIcon,
 } from '@mui/icons-material';
+import { CheckCircle } from '@mui/icons-material';
 import { useNotifications } from '../contexts/NotificationsContext';
 import { useAuth } from '../contexts/authContext';
+import { getBrandInfo } from '../firebase/notifications';
 
 const Notifications: React.FC = () => {
   const theme = useTheme();
@@ -60,10 +62,25 @@ const Notifications: React.FC = () => {
     message: string;
     severity: 'success' | 'error';
   }>({ open: false, message: '', severity: 'success' });
+  const [brandVerifiedMap, setBrandVerifiedMap] = useState<{[brandId: string]: boolean}>({});
 
   // Debug logs
   console.log('DEBUG: currentUserId:', user?.uid);
   console.log('DEBUG: notifications:', notifications);
+
+  useEffect(() => {
+    // Fetch verification status for all unique brands in notifications
+    const fetchAllBrands = async () => {
+      const uniqueBrandIds = Array.from(new Set(notifications.map(n => n.senderId)));
+      const map: {[brandId: string]: boolean} = {};
+      await Promise.all(uniqueBrandIds.map(async (brandId) => {
+        const brand = await getBrandInfo(brandId);
+        map[brandId] = !!(brand && (brand as any).isVerified);
+      }));
+      setBrandVerifiedMap(map);
+    };
+    if (notifications.length) fetchAllBrands();
+  }, [notifications]);
 
   const handleStatusChange = async (id: string, newStatus: 'accepted' | 'rejected' | 'viewed') => {
     setProcessingId(id);
@@ -249,8 +266,11 @@ const Notifications: React.FC = () => {
                         <BusinessIcon />
                       </Avatar>
                       <Box sx={{ flex: 1 }}>
-                        <Typography variant="h6" sx={{ fontWeight: 700, mb: 0.5 }}>
+                        <Typography variant="h6" sx={{ fontWeight: 700, mb: 0.5, display: 'flex', alignItems: 'center', gap: 1 }}>
                           {notification.brandName}
+                          {brandVerifiedMap[notification.senderId] && (
+                            <CheckCircle sx={{ color: '#2196f3' }} titleAccess="Verified" />
+                          )}
                         </Typography>
                         <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                           <IndustryIcon sx={{ fontSize: 16, mr: 0.5, color: 'text.secondary' }} />
