@@ -134,13 +134,19 @@ export const updateNotificationStatus = async (notificationId, status) => {
  */
 export const getBrandInfo = async (brandId) => {
   try {
-    const brandDoc = await getDoc(doc(db, 'brands', brandId));
+    // Validate brandId parameter
+    if (!brandId || typeof brandId !== 'string' || brandId.trim() === '') {
+      console.error('Invalid brandId provided to getBrandInfo:', brandId);
+      return null;
+    }
+    
+    const brandDoc = await getDoc(doc(db, 'brands', brandId.trim()));
     if (brandDoc.exists()) {
       return { id: brandDoc.id, ...brandDoc.data() };
     }
     return null;
   } catch (error) {
-    console.error('Error fetching brand info:', error);
+    console.error('Error fetching brand info for brandId:', brandId, error);
     throw error;
   }
 };

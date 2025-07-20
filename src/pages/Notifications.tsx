@@ -67,16 +67,32 @@ const Notifications: React.FC = () => {
 
   // Debug logs
   console.log('DEBUG: currentUserId:', user?.uid);
-  console.log('DEBUG: notifications:', notifications);
+  console.log('DEBUG: notifications count:', notifications.length);
 
   useEffect(() => {
     // Fetch verification status for all unique brands in notifications
     const fetchAllBrands = async () => {
-      const uniqueBrandIds = Array.from(new Set(notifications.map(n => n.senderId)));
+      const validNotifications = notifications.filter(n => n && n.senderId);
+      
+      const uniqueBrandIds = Array.from(new Set(
+        validNotifications
+          .map(n => n.senderId)
+          .filter(id => id && typeof id === 'string' && id.trim() !== '')
+      ));
+      
+      if (uniqueBrandIds.length === 0) {
+        return;
+      }
+      
       const map: {[brandId: string]: boolean} = {};
       await Promise.all(uniqueBrandIds.map(async (brandId) => {
-        const brand = await getBrandInfo(brandId);
-        map[brandId] = !!(brand && (brand as any).isVerified);
+        try {
+          const brand = await getBrandInfo(brandId);
+          map[brandId] = !!(brand && (brand as any).isVerified);
+        } catch (error) {
+          console.error(`Error fetching brand info for ID ${brandId}:`, error);
+          map[brandId] = false; // Default to not verified on error
+        }
       }));
       setBrandVerifiedMap(map);
     };
@@ -269,7 +285,7 @@ const Notifications: React.FC = () => {
                       <Box sx={{ flex: 1 }}>
                         <Typography variant="h6" sx={{ fontWeight: 700, mb: 0.5, display: 'flex', alignItems: 'center', gap: 1 }}>
                           {notification.brandName}
-                          {brandVerifiedMap[notification.senderId] && (
+                          {notification.senderId && brandVerifiedMap[notification.senderId] && (
                             <img 
                               src={bluetickIcon} 
                               alt="Verified" 
@@ -340,7 +356,7 @@ const Notifications: React.FC = () => {
                           Social Media:
                         </Typography>
                         <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                          {Object.entries(notification.socials)
+                          {notification.socials && Object.entries(notification.socials)
                             .filter(([platform, handle]) => handle && handle.trim() !== '')
                             .map(([platform, handle]) => (
                             <Chip
@@ -352,6 +368,11 @@ const Notifications: React.FC = () => {
                               sx={{ '& .MuiChip-icon': { fontSize: 16 } }}
                             />
                           ))}
+                          {(!notification.socials || Object.keys(notification.socials || {}).length === 0) && (
+                            <Typography variant="body2" color="text.secondary">
+                              No social media links available
+                            </Typography>
+                          )}
                         </Box>
                       </Grid>
                     </Grid>

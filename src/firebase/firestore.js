@@ -103,9 +103,12 @@ export const getUserData = async (uid) => {
     if (userSnap.exists()) {
       return { id: userSnap.id, ...userSnap.data() };
     } else {
-      throw new Error('User not found');
+      // User document doesn't exist, return null instead of throwing error
+      console.warn(`User document not found for UID: ${uid}`);
+      return null;
     }
   } catch (error) {
+    console.error('Error fetching user data:', error);
     throw error;
   }
 };
