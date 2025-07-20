@@ -51,6 +51,7 @@ const Notifications: React.FC = () => {
     notifications, 
     unreadCount, 
     loading, 
+    connected,
     markAsRead, 
     updateStatus, 
     refreshNotifications 
@@ -68,6 +69,7 @@ const Notifications: React.FC = () => {
   // Debug logs
   console.log('DEBUG: currentUserId:', user?.uid);
   console.log('DEBUG: notifications count:', notifications.length);
+  console.log('DEBUG: connected to Firestore:', connected);
 
   useEffect(() => {
     // Fetch verification status for all unique brands in notifications
@@ -197,6 +199,11 @@ const Notifications: React.FC = () => {
         >
           Refresh
         </Button>
+        {!connected && (
+          <Alert severity="warning" sx={{ ml: 2 }}>
+            Disconnected from server. Click refresh to reconnect.
+          </Alert>
+        )}
       </Box>
 
       {/* Filter Chips */}

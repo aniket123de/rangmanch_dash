@@ -30,6 +30,7 @@ interface NotificationsContextType {
   notifications: NotificationData[];
   unreadCount: number;
   loading: boolean;
+  connected: boolean;
   markAsRead: (id: string) => Promise<void>;
   updateStatus: (id: string, status: 'accepted' | 'rejected') => Promise<void>;
   refreshNotifications: () => void;
@@ -44,6 +45,7 @@ interface NotificationsProviderProps {
 export const NotificationsProvider: React.FC<NotificationsProviderProps> = ({ children }) => {
   const [notifications, setNotifications] = useState<NotificationData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [connected, setConnected] = useState(false);
   const [unsubscribe, setUnsubscribe] = useState<(() => void) | null>(null);
 
   const unreadCount = notifications.filter(n => n.status === 'new').length;
@@ -72,25 +74,41 @@ export const NotificationsProvider: React.FC<NotificationsProviderProps> = ({ ch
   };
 
   const setupNotificationsListener = (userId: string) => {
+    console.log('Setting up notifications listener for user:', userId);
     if (unsubscribe) {
+      console.log('Cleaning up previous listener');
       unsubscribe();
     }
 
-    const unsubscribeFn = fetchNotifications(userId, (notifications: NotificationData[]) => {
-      const notificationsWithTimestamp = addFormattedTimestamp(notifications);
-      setNotifications(notificationsWithTimestamp);
-      setLoading(false);
-    });
+    try {
+      const unsubscribeFn = fetchNotifications(userId, (notifications: NotificationData[]) => {
+        console.log('Received notifications update:', notifications.length);
+        const notificationsWithTimestamp = addFormattedTimestamp(notifications);
+        setNotifications(notificationsWithTimestamp);
+        setConnected(true);
+        setLoading(false);
+      });
 
-    setUnsubscribe(() => unsubscribeFn);
+      setUnsubscribe(() => unsubscribeFn);
+      console.log('Notifications listener setup completed');
+    } catch (error) {
+      console.error('Error setting up notifications listener:', error);
+      setConnected(false);
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
+    console.log('NotificationsProvider: Setting up auth listener');
     const unsubscribeAuth = auth.onAuthStateChanged((user: User | null) => {
+      console.log('NotificationsProvider: Auth state changed, user:', user?.uid || 'null');
       if (user) {
+        console.log('NotificationsProvider: User authenticated, setting up notifications listener');
         setupNotificationsListener(user.uid);
       } else {
+        console.log('NotificationsProvider: User not authenticated, clearing notifications');
         setNotifications([]);
+        setConnected(false);
         setLoading(false);
         if (unsubscribe) {
           unsubscribe();
@@ -100,6 +118,7 @@ export const NotificationsProvider: React.FC<NotificationsProviderProps> = ({ ch
     });
 
     return () => {
+      console.log('NotificationsProvider: Cleaning up');
       unsubscribeAuth();
       if (unsubscribe) {
         unsubscribe();
@@ -128,9 +147,16 @@ export const NotificationsProvider: React.FC<NotificationsProviderProps> = ({ ch
   };
 
   const refreshNotifications = () => {
+    console.log('refreshNotifications: Manual refresh triggered');
     const user = auth.currentUser;
     if (user) {
+      console.log('refreshNotifications: User found, refreshing for:', user.uid);
+      setLoading(true);
       setupNotificationsListener(user.uid);
+    } else {
+      console.log('refreshNotifications: No authenticated user found');
+      setNotifications([]);
+      setLoading(false);
     }
   };
 
@@ -140,6 +166,7 @@ export const NotificationsProvider: React.FC<NotificationsProviderProps> = ({ ch
         notifications,
         unreadCount,
         loading,
+        connected,
         markAsRead,
         updateStatus,
         refreshNotifications,

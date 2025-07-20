@@ -52,6 +52,7 @@ export const sendNotification = async (notificationData) => {
  * @returns {Function} - Unsubscribe function
  */
 export const fetchNotifications = (userId, callback) => {
+  console.log('fetchNotifications: Setting up listener for user:', userId);
   try {
     // TEMP: Show all notifications for admin/testing
     const q = query(
@@ -66,24 +67,28 @@ export const fetchNotifications = (userId, callback) => {
     // );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
+      console.log('fetchNotifications: Received snapshot with', snapshot.size, 'documents');
       const notifications = [];
       snapshot.forEach((doc) => {
+        const data = doc.data();
         notifications.push({
           id: doc.id,
-          ...doc.data(),
-          createdAt: doc.data().createdAt?.toDate?.() || new Date(),
-          updatedAt: doc.data().updatedAt?.toDate?.() || new Date(),
+          ...data,
+          createdAt: data.createdAt?.toDate?.() || new Date(),
+          updatedAt: data.updatedAt?.toDate?.() || new Date(),
         });
       });
+      console.log('fetchNotifications: Processed notifications:', notifications.length);
       callback(notifications);
     }, (error) => {
-      console.error('Error fetching notifications:', error);
+      console.error('fetchNotifications: Error in snapshot listener:', error);
       callback([]);
     });
 
+    console.log('fetchNotifications: Listener setup complete');
     return unsubscribe;
   } catch (error) {
-    console.error('Error setting up notifications listener:', error);
+    console.error('fetchNotifications: Error setting up notifications listener:', error);
     callback([]);
     return () => {};
   }
