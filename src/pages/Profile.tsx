@@ -27,6 +27,7 @@ import {
   AttachMoney as MoneyIcon,
   CheckCircle,
 } from '@mui/icons-material';
+import bluetickIcon from '../assets/bluetick.png';
 import { useAuth } from '../contexts/authContext';
 import { createOrUpdateCreatorProfile, getMyCreatorProfile } from '../firebase/firestore';
 
@@ -182,7 +183,17 @@ const Profile: React.FC = () => {
     <Box>
       <Typography variant="h4" component="h1" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
         Profile
-        {isVerified && <CheckCircle sx={{ color: '#2196f3' }} titleAccess="Verified" />}
+        {isVerified && (
+          <img 
+            src={bluetickIcon} 
+            alt="Verified" 
+            style={{ 
+              width: 28, 
+              height: 28 
+            }} 
+            title="Verified"
+          />
+        )}
       </Typography>
       
       {saveSuccess && (

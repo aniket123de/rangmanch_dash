@@ -40,6 +40,7 @@ import {
   Refresh as RefreshIcon,
 } from '@mui/icons-material';
 import { CheckCircle } from '@mui/icons-material';
+import bluetickIcon from '../assets/bluetick.png';
 import { useNotifications } from '../contexts/NotificationsContext';
 import { useAuth } from '../contexts/authContext';
 import { getBrandInfo } from '../firebase/notifications';
@@ -269,7 +270,16 @@ const Notifications: React.FC = () => {
                         <Typography variant="h6" sx={{ fontWeight: 700, mb: 0.5, display: 'flex', alignItems: 'center', gap: 1 }}>
                           {notification.brandName}
                           {brandVerifiedMap[notification.senderId] && (
-                            <CheckCircle sx={{ color: '#2196f3' }} titleAccess="Verified" />
+                            <img 
+                              src={bluetickIcon} 
+                              alt="Verified" 
+                              style={{ 
+                                width: 20, 
+                                height: 20, 
+                                marginLeft: 4 
+                              }} 
+                              title="Verified"
+                            />
                           )}
                         </Typography>
                         <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>

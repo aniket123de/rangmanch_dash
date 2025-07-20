@@ -29,6 +29,7 @@ import {
   Code as CodeIcon,
   CheckCircle,
 } from '@mui/icons-material';
+import bluetickIcon from '../assets/bluetick.png';
 import { useHistory } from 'react-router-dom';
 import { useAuth } from '../contexts/authContext';
 import { useNotifications } from '../contexts/NotificationsContext';
@@ -250,7 +251,21 @@ const Sidebar: React.FC<SidebarProps> = ({
           : null}
       </Avatar>
       {isVerified && (
-        <CheckCircle sx={{ color: '#2196f3', position: 'absolute', bottom: -4, right: -4, fontSize: 18, bgcolor: 'white', borderRadius: '50%' }} titleAccess="Verified" />
+        <img 
+          src={bluetickIcon} 
+          alt="Verified" 
+          style={{ 
+            width: 16, 
+            height: 16, 
+            position: 'absolute', 
+            bottom: -4, 
+            right: -4,
+            backgroundColor: 'white',
+            borderRadius: '50%',
+            padding: 1
+          }} 
+          title="Verified"
+        />
       )}
     </Box>
   );
