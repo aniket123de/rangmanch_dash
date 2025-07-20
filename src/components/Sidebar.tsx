@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Drawer,
   List,
@@ -27,11 +27,13 @@ import {
   InsertEmoticon as InsertEmoticonIcon,
   Lightbulb as LightbulbIcon,
   Code as CodeIcon,
+  CheckCircle,
 } from '@mui/icons-material';
 import { useHistory } from 'react-router-dom';
 import { useAuth } from '../contexts/authContext';
 import { useNotifications } from '../contexts/NotificationsContext';
 import SentimentAnalysisPanel from './SentimentAnalysisPanel';
+import { getMyCreatorProfile } from '../firebase/firestore';
 
 interface SidebarProps {
   open: boolean;
@@ -119,6 +121,22 @@ const Sidebar: React.FC<SidebarProps> = ({
   const history = useHistory();
   const { user, userLoggedIn, logout, userData } = useAuth();
   const { unreadCount } = useNotifications();
+  const [isVerified, setIsVerified] = useState(false);
+
+  useEffect(() => {
+    const fetchVerification = async () => {
+      if (userLoggedIn && user) {
+        try {
+          const profile = await getMyCreatorProfile(user.uid);
+          console.log('Sidebar profile:', profile);
+          setIsVerified(!!(profile as any).isVerified);
+        } catch (e) {
+          console.error('Sidebar profile fetch error:', e);
+        }
+      }
+    };
+    fetchVerification();
+  }, [userLoggedIn, user]);
 
   const handleNavItemClick = (item: { text: string; id: string; path: string }) => {
     onSectionChange(item.id);
@@ -218,18 +236,23 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   // Avatar for Profile button
   const profileAvatar = (
-    <Avatar
-      sx={{ width: 32, height: 32, bgcolor: theme.palette.primary.main }}
-      src={
-        (userLoggedIn && (user?.photoURL || userData?.profileImage))
-          ? (user?.photoURL || userData?.profileImage)
-          : undefined
-      }
-    >
-      {userLoggedIn && !(user?.photoURL || userData?.profileImage)
-        ? (user?.displayName?.charAt(0) || user?.email?.charAt(0) || 'U')
-        : null}
-    </Avatar>
+    <Box sx={{ position: 'relative', display: 'inline-block' }}>
+      <Avatar
+        sx={{ width: 32, height: 32, bgcolor: theme.palette.primary.main }}
+        src={
+          (userLoggedIn && (user?.photoURL || userData?.profileImage))
+            ? (user?.photoURL || userData?.profileImage)
+            : undefined
+        }
+      >
+        {userLoggedIn && !(user?.photoURL || userData?.profileImage)
+          ? (user?.displayName?.charAt(0) || user?.email?.charAt(0) || 'U')
+          : null}
+      </Avatar>
+      {isVerified && (
+        <CheckCircle sx={{ color: '#2196f3', position: 'absolute', bottom: -4, right: -4, fontSize: 18, bgcolor: 'white', borderRadius: '50%' }} titleAccess="Verified" />
+      )}
+    </Box>
   );
 
   const userItems = [

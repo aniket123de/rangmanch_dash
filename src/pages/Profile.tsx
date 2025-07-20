@@ -220,11 +220,16 @@ const Profile: React.FC = () => {
           
           <Grid container spacing={4}>
             <Grid item xs={12} md={4} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <Avatar
-                src={avatarSrc}
-                alt={profileData.name}
-                sx={{ width: 120, height: 120, mb: 2 }}
-              />
+              <Box sx={{ position: 'relative', display: 'inline-block' }}>
+                <Avatar
+                  src={avatarSrc}
+                  alt={profileData.name}
+                  sx={{ width: 120, height: 120, mb: 2 }}
+                />
+                {isVerified && (
+                  <CheckCircle sx={{ color: '#2196f3', position: 'absolute', bottom: 8, right: 8, fontSize: 32, bgcolor: 'white', borderRadius: '50%' }} titleAccess="Verified" />
+                )}
+              </Box>
               
               {editing && (
                 <Box sx={{ display: 'flex', gap: 1 }}>
